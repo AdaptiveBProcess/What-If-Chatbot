@@ -1,0 +1,94 @@
+version: "3.1"
+
+nlu:
+- intent: greeting
+  examples: |
+    - Hi
+    - How are you?
+    - Is anyone there?
+    - hello there
+    - good morning
+    - good evening
+    - Hello
+    - hey there
+    - let's go
+    - hey dude
+    - good morning
+    - good evening
+    - good afternoon
+    - Good day
+- intent: goodbye
+  examples: |
+    - good night
+    - bye
+    - goodbye
+    - have a nice day
+    - see you around
+    - bye bye
+    - see you later
+- intent: increase_demand
+  examples: |
+    - I want to create a scenario of [20](inc_percentage)% increased demand
+    - I want to increase [10](inc_percentage)% the process demand
+    - I want to see what happens if the process demand increase in [50](inc_percentage)%
+    - I want to create a scenario of [90](inc_percentage)% increased demand
+    - I want to increase [60](inc_percentage)% the process demand
+    - I want to see what happens if the process demand increase in [30](inc_percentage)%
+- intent: decrease_demand
+  examples: |
+    - I want to create a scenario of [20](dec_percentage)% decreased demand
+    - I want to decrease [10](dec_percentage)% the process demand
+    - I want to see what happens if the process demand decrease in [50](dec_percentage)%
+    - I want to create a scenario of [90](dec_percentage)% decreased demand
+    - I want to decrease [60](dec_percentage)% the process demand
+    - I want to see what happens if the process demand decrease in [30](dec_percentage)%
+
+- intent: add_resources
+  examples: |
+    - I want to add a resource in the process
+    - I want to create a scenario where resources are added
+    - I want to see what happens if I add resources to the process
+
+- intent: change_resources
+  examples: |
+    - I want to change the resources in the process
+    - I want to create a scenario where resources are changed
+    - I want to see what happens if the resources change in the process
+
+- intent: fast_task
+  examples: |
+    - What if some task becomes faster?
+    - I want a task to be faster
+    - I want to become faster a task in the process
+
+- intent: slow_task
+  examples: |
+    - What if some task becomes slower?
+    - I want a task to be slower
+    - I want to become slower a task in the process
+
+- intent: remove_resources
+  examples: |
+    - I want to remove a resources in the process
+    - I want to create a scenario where resources are removed
+    - I want to see what happens if I remove resources to the process
+
+- intent: create_working_time
+  examples: |
+    - What if we create a working times?
+    - I want to create time tables of resources
+    - What if we create a working time table?
+    - What if we create working tables?
+
+- intent: modify_working_time
+  examples: |
+    - What if we modify a working times?
+    - I want to modify time tables of resources
+    - What if we modify a working time table?
+    - What if we modify working tables?
+
+- intent: automate_task
+  examples: |
+    - I want to automate a task in the process
+    - Automate task in the process
+    - I want to do an automatization in a process task
