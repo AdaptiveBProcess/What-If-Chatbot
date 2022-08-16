@@ -93,7 +93,26 @@ def return_message_stats(stats_path, scenario_name):
     df = pd.DataFrame(data = data[1:], columns=data[0])
     
     df['Average'] = df['Average'].astype(float).astype(str).apply(lambda x: format(float(x),".2f"))
+    df = df[df['KPI']== 'Process Cycle Time (s)']
+
+    message = 'Average Stats for {} scenario: \n'.format(scenario_name)
+    message += '\n'.join(df['KPI'] + ': ' + df['Average'])
     
+    return message
+
+def return_message_stats_complete(stats_path, scenario_name):
+    
+    pd.set_option('display.float_format', lambda x: '%.2f' % x)
+    
+    ptt_s = 'Scenario statistics'
+    ptt_e = 'Process Cycle Time (s) distribution' 
+    text = extract_text(stats_path, ptt_s, ptt_e)
+    
+    data = [x.split(',') for x in text.split('\n') if x != '']
+    df = pd.DataFrame(data = data[1:], columns=data[0])
+    
+    df['Average'] = df['Average'].astype(float).astype(str).apply(lambda x: format(float(x),".2f"))
+
     message = 'Average Stats for {} scenario: \n'.format(scenario_name)
     message += '\n'.join(df['KPI'] + ': ' + df['Average'])
     

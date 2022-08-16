@@ -17,6 +17,13 @@ nlu:
     - good evening
     - good afternoon
     - Good day
+
+- intent: help
+  examples: |
+    - I need help
+    - Can you help me please?
+    - I dont know how to use this chatbot
+
 - intent: goodbye
   examples: |
     - good night
@@ -26,6 +33,7 @@ nlu:
     - see you around
     - bye bye
     - see you later
+
 - intent: increase_demand
   examples: |
     - I want to create a scenario of [20](inc_percentage)% increased demand
@@ -34,6 +42,7 @@ nlu:
     - I want to create a scenario of [90](inc_percentage)% increased demand
     - I want to increase [60](inc_percentage)% the process demand
     - I want to see what happens if the process demand increase in [30](inc_percentage)%
+    
 - intent: decrease_demand
   examples: |
     - I want to create a scenario of [20](dec_percentage)% decreased demand

@@ -28,259 +28,276 @@ entities:
 - dec_percentage
 
 slots:
+  inc_percentage:
+    type: text
+    influence_conversation: true
+    mappings:
+    - type: from_entity
+      entity: inc_percentage
+  dec_percentage:
+    type: text
+    influence_conversation: true
+    mappings:
+    - type: from_entity
+      entity: dec_percentage
 
-    inc_percentage:
-      type: text
-      influence_conversation: true
-      mappings:
-      - type: from_entity
-        entity: inc_percentage
-    dec_percentage:
-      type: text
-      influence_conversation: true
-      mappings:
-      - type: from_entity
-        entity: dec_percentage
+  add_resource_name:
+    type: text
+    influence_conversation: false
+    mappings:
+    - type: from_text
+      conditions:
+        - active_loop: add_resources_form
+          requested_slot: add_resource_name
+  add_resource_amount:
+    type: text
+    influence_conversation: false
+    mappings:
+    - type: from_text
+      conditions:
+        - active_loop: add_resources_form
+          requested_slot: add_resource_amount
+  add_resource_cost:
+    type: text
+    influence_conversation: false
+    mappings:
+    - type: from_text
+      conditions:
+        - active_loop: add_resources_form
+          requested_slot: add_resource_cost
+  add_resource_time_table:
+    type: text
+    influence_conversation: false
+    mappings:
+    - type: from_text
+      conditions:
+        - active_loop: add_resources_form
+          requested_slot: add_resource_time_table
+  add_resource_new_role:
+    type: text
+    influence_conversation: false
+    mappings:
+    - type: from_text
+      conditions:
+        - active_loop: add_resources_form
+          requested_slot: add_resource_new_role
+  
+  change_resources_role_modify:
+    type: text
+    influence_conversation: false
+    mappings:
+    - type: from_text
+      conditions:
+        - active_loop: change_resources_form
+          requested_slot: change_resources_role_modify
+  change_resource_new_amount:
+    type: text
+    influence_conversation: false
+    mappings:
+    - type: from_text
+      conditions:
+        - active_loop: change_resources_form
+          requested_slot: change_resource_new_amount
+  change_resource_new_cost:
+    type: text
+    influence_conversation: false
+    mappings:
+    - type: from_text
+      conditions:
+        - active_loop: change_resources_form
+          requested_slot: change_resource_new_cost
 
-    add_resource_name:
-      type: text
-      influence_conversation: false
-      mappings:
-      - type: from_text
-        conditions:
-          - active_loop: add_resources_form
-            requested_slot: add_resource_name
-    add_resource_amount:
-      type: text
-      influence_conversation: false
-      mappings:
-      - type: from_text
-        conditions:
-          - active_loop: add_resources_form
-            requested_slot: add_resource_amount
-    add_resource_cost:
-      type: text
-      influence_conversation: false
-      mappings:
-      - type: from_text
-        conditions:
-          - active_loop: add_resources_form
-            requested_slot: add_resource_cost
-    add_resource_time_table:
-      type: text
-      influence_conversation: false
-      mappings:
-      - type: from_text
-        conditions:
-          - active_loop: add_resources_form
-            requested_slot: add_resource_time_table
-    add_resource_new_role:
-      type: text
-      influence_conversation: false
-      mappings:
-      - type: from_text
-        conditions:
-          - active_loop: add_resources_form
-            requested_slot: add_resource_new_role
-    
-    change_resources_role_modify:
-      type: text
-      influence_conversation: false
-      mappings:
-      - type: from_text
-        conditions:
-          - active_loop: change_resources_form
-            requested_slot: change_resources_role_modify
-    change_resource_new_amount:
-      type: text
-      influence_conversation: false
-      mappings:
-      - type: from_text
-        conditions:
-          - active_loop: change_resources_form
-            requested_slot: change_resource_new_amount
-    change_resource_new_cost:
-      type: text
-      influence_conversation: false
-      mappings:
-      - type: from_text
-        conditions:
-          - active_loop: change_resources_form
-            requested_slot: change_resource_new_cost
+  fast_task_name:
+    type: text
+    influence_conversation: false
+    mappings:
+    - type: from_text
+      conditions:
+        - active_loop: fast_task_form
+          requested_slot: fast_task_name
+  fast_task_percentage:
+    type: text
+    influence_conversation: false
+    mappings:
+    - type: from_text
+      conditions:
+        - active_loop: fast_task_form
+          requested_slot: fast_task_percentage
 
-    fast_task_name:
-      type: text
-      influence_conversation: false
-      mappings:
-      - type: from_text
-        conditions:
-          - active_loop: fast_task_form
-            requested_slot: fast_task_name
-    fast_task_percentage:
-      type: text
-      influence_conversation: false
-      mappings:
-      - type: from_text
-        conditions:
-          - active_loop: fast_task_form
-            requested_slot: fast_task_percentage
+  slow_task_name:
+    type: text
+    influence_conversation: false
+    mappings:
+    - type: from_text
+      conditions:
+        - active_loop: slow_task_form
+          requested_slot: slow_task_name
+  slow_task_percentage:
+    type: text
+    influence_conversation: false
+    mappings:
+    - type: from_text
+      conditions:
+        - active_loop: slow_task_form
+          requested_slot: slow_task_percentage
 
-    slow_task_name:
-      type: text
-      influence_conversation: false
-      mappings:
-      - type: from_text
-        conditions:
-          - active_loop: slow_task_form
-            requested_slot: slow_task_name
-    slow_task_percentage:
-      type: text
-      influence_conversation: false
-      mappings:
-      - type: from_text
-        conditions:
-          - active_loop: slow_task_form
-            requested_slot: slow_task_percentage
+  remove_resources_role:
+    type: text
+    influence_conversation: false
+    mappings:
+    - type: from_text
+      conditions:
+        - active_loop: remove_resources_form
+          requested_slot: remove_resources_role
+  remove_resources_transfer_role:
+    type: text
+    influence_conversation: false
+    mappings:
+    - type: from_text
+      conditions:
+        - active_loop: remove_resources_form
+          requested_slot: remove_resources_transfer_role
+          
+  create_working_time_id:
+    type: text
+    influence_conversation: false
+    mappings:
+    - type: from_text
+      conditions:
+        - active_loop: create_working_time_form
+          requested_slot: create_working_time_id
+  create_working_time_name:
+    type: text
+    influence_conversation: false
+    mappings:
+    - type: from_text
+      conditions:
+        - active_loop: create_working_time_form
+          requested_slot: create_working_time_name
+  create_working_time_from_time:
+    type: text
+    influence_conversation: false
+    mappings:
+    - type: from_text
+      conditions:
+        - active_loop: create_working_time_form
+          requested_slot: create_working_time_from_time
+  create_working_time_to_time:
+    type: text
+    influence_conversation: false
+    mappings:
+    - type: from_text
+      conditions:
+        - active_loop: create_working_time_form
+          requested_slot: create_working_time_to_time
+  create_working_time_from_weekday:
+    type: text
+    influence_conversation: false
+    mappings:
+    - type: from_text
+      conditions:
+        - active_loop: create_working_time_form
+          requested_slot: create_working_time_from_weekday
+  create_working_time_to_weekday:
+    type: text
+    influence_conversation: false
+    mappings:
+    - type: from_text
+      conditions:
+        - active_loop: create_working_time_form
+          requested_slot: create_working_time_to_weekday
+  create_working_time_resource:
+    type: text
+    influence_conversation: false
+    mappings:
+    - type: from_text
+      conditions:
+        - active_loop: create_working_time_form
+          requested_slot: create_working_time_resource
 
-    remove_resources_role:
-      type: text
-      influence_conversation: false
-      mappings:
-      - type: from_text
-        conditions:
-          - active_loop: remove_resources_form
-            requested_slot: remove_resources_role
-    remove_resources_transfer_role:
-      type: text
-      influence_conversation: false
-      mappings:
-      - type: from_text
-        conditions:
-          - active_loop: remove_resources_form
-            requested_slot: remove_resources_transfer_role
-            
-    create_working_time_id:
-      type: text
-      influence_conversation: false
-      mappings:
-      - type: from_text
-        conditions:
-          - active_loop: create_working_time_form
-            requested_slot: create_working_time_id
-    create_working_time_name:
-      type: text
-      influence_conversation: false
-      mappings:
-      - type: from_text
-        conditions:
-          - active_loop: create_working_time_form
-            requested_slot: create_working_time_name
-    create_working_time_from_time:
-      type: text
-      influence_conversation: false
-      mappings:
-      - type: from_text
-        conditions:
-          - active_loop: create_working_time_form
-            requested_slot: create_working_time_from_time
-    create_working_time_to_time:
-      type: text
-      influence_conversation: false
-      mappings:
-      - type: from_text
-        conditions:
-          - active_loop: create_working_time_form
-            requested_slot: create_working_time_to_time
-    create_working_time_from_weekday:
-      type: text
-      influence_conversation: false
-      mappings:
-      - type: from_text
-        conditions:
-          - active_loop: create_working_time_form
-            requested_slot: create_working_time_from_weekday
-    create_working_time_to_weekday:
-      type: text
-      influence_conversation: false
-      mappings:
-      - type: from_text
-        conditions:
-          - active_loop: create_working_time_form
-            requested_slot: create_working_time_to_weekday
-    create_working_time_resource:
-      type: text
-      influence_conversation: false
-      mappings:
-      - type: from_text
-        conditions:
-          - active_loop: create_working_time_form
-            requested_slot: create_working_time_resource
+  modify_working_time_name:
+    type: text
+    influence_conversation: false
+    mappings:
+    - type: from_text
+      conditions:
+        - active_loop: modify_working_time_form
+          requested_slot: modify_working_time_name
+  modify_working_time_from_time:
+    type: text
+    influence_conversation: false
+    mappings:
+    - type: from_text
+      conditions:
+        - active_loop: modify_working_time_form
+          requested_slot: modify_working_time_from_time
+  modify_working_time_to_time:
+    type: text
+    influence_conversation: false
+    mappings:
+    - type: from_text
+      conditions:
+        - active_loop: modify_working_time_form
+          requested_slot: modify_working_time_to_time
+  modify_working_time_from_weekday:
+    type: text
+    influence_conversation: false
+    mappings:
+    - type: from_text
+      conditions:
+        - active_loop: modify_working_time_form
+          requested_slot: modify_working_time_from_weekday
+  modify_working_time_to_weekday:
+    type: text
+    influence_conversation: false
+    mappings:
+    - type: from_text
+      conditions:
+        - active_loop: modify_working_time_form
+          requested_slot: modify_working_time_to_weekday
 
-    modify_working_time_name:
-      type: text
-      influence_conversation: false
-      mappings:
-      - type: from_text
-        conditions:
-          - active_loop: modify_working_time_form
-            requested_slot: modify_working_time_name
-    modify_working_time_from_time:
-      type: text
-      influence_conversation: false
-      mappings:
-      - type: from_text
-        conditions:
-          - active_loop: modify_working_time_form
-            requested_slot: modify_working_time_from_time
-    modify_working_time_to_time:
-      type: text
-      influence_conversation: false
-      mappings:
-      - type: from_text
-        conditions:
-          - active_loop: modify_working_time_form
-            requested_slot: modify_working_time_to_time
-    modify_working_time_from_weekday:
-      type: text
-      influence_conversation: false
-      mappings:
-      - type: from_text
-        conditions:
-          - active_loop: modify_working_time_form
-            requested_slot: modify_working_time_from_weekday
-    modify_working_time_to_weekday:
-      type: text
-      influence_conversation: false
-      mappings:
-      - type: from_text
-        conditions:
-          - active_loop: modify_working_time_form
-            requested_slot: modify_working_time_to_weekday
-
-    automate_task_name:
-      type: text
-      influence_conversation: false
-      mappings:
-      - type: from_text
-        conditions:
-          - active_loop: automate_task_form
-            requested_slot: automate_task_name
-    automate_task_percentage:
-      type: text
-      influence_conversation: false
-      mappings:
-      - type: from_text
-        conditions:
-          - active_loop: automate_task_form
-            requested_slot: automate_task_percentage
+  automate_task_name:
+    type: text
+    influence_conversation: false
+    mappings:
+    - type: from_text
+      conditions:
+        - active_loop: automate_task_form
+          requested_slot: automate_task_name
+  automate_task_percentage:
+    type: text
+    influence_conversation: false
+    mappings:
+    - type: from_text
+      conditions:
+        - active_loop: automate_task_form
+          requested_slot: automate_task_percentage
+  more_information:
+    type: text
+    influence_conversation: false
+    mappings:
+    - type: from_text
+      conditions:
+        - active_loop: more_information_form
+          requested_slot: more_information
+  comparison_scenario:
+    type: text
+    influence_conversation: false
+    mappings:
+    - type: custom
+  name_scenario:
+    type: text
+    influence_conversation: false
+    mappings:
+    - type: custom
 
 responses:
   utter_greeting:
   - text: Hello! I am What If Analysis chatbot! How can I help?
-  utter_help:
-  - text: I am What If chatbot and I am able to create different What If scenarios. What do you want to do?
   utter_goodbye:
-  - text: See you later, thanks for use this chatbot
+  - text: See you later, thanks for use this chatbot.
+  utter_ask_more_information:
+  - text: Do you want to know more information?
   
   utter_ask_add_resource_name:
   - text: Indicate the name of the resource that you want to add
@@ -421,6 +438,8 @@ actions:
 - action_modify_working_time
 - validate_automate_task_form
 - action_automate_task
+- action_more_information
+- action_help
 
 forms:
   add_resources_form:
@@ -467,6 +486,9 @@ forms:
     required_slots:
       - automate_task_name
       - automate_task_percentage
+  more_information_form:
+    required_slots:
+      - more_information
 
 session_config:
   session_expiration_time: 60

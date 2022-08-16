@@ -15,6 +15,7 @@ from rasa_sdk.executor import CollectingDispatcher
 from rasa_sdk.forms import FormValidationAction
 from rasa_core_sdk.forms import FormAction
 from rasa_sdk.events import SlotSet
+from rasa_sdk.events import AllSlotsReset
 
 import numpy as np
 import pandas as pd
@@ -23,6 +24,7 @@ import string
 import random
 import uuid
 from datetime import datetime
+import time
 
 from . import utils_chatbot as u
 
@@ -180,8 +182,28 @@ class AddResourcesForm(FormAction):
         Define what the form has to do
         after all required slots are filled
         """
-
         return []
+
+class ActionHelp(Action):
+    def name(self) -> Text:
+        return "action_help"
+
+    def run(self, dispatcher: CollectingDispatcher,
+            tracker: Tracker,
+            domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+        
+        msg = """   The scenarios supported by What-If scenarios Chatbot are:
+    - Scenarios of increase in process demand.
+    - Scenarios of decrease in process demand.
+    - Scenarios of addition of resources to the process.
+    - Scenarios of modification of existing resources in the process.
+    - Scenarios of removal of existing resources in the process.
+    - Scenarios of optimization of process tasks.
+    - Scenarios of creation of working timetables.
+    - Scenarios of modification of working timetables.
+    - Scenarios of process task automation.
+        """
+        dispatcher.utter_message(text=msg)
 
 class ActionAddResource(Action):
     def name(self) -> Text:
@@ -200,10 +222,11 @@ class ActionAddResource(Action):
         resourceName = tracker.get_slot("add_resource_name")
         totalAmount = tracker.get_slot("add_resource_amount")
         costPerHour = tracker.get_slot("add_resource_cost")
-        
-        timetableName = tracker.get_slots("add_resource_time_table")
+
+        timetableName = tracker.get_slot("add_resource_time_table")
                 
-        timetableId = df_timetables[df_timetables['timetableName']== timetableName]['timetableId']
+        timetableId = df_timetables[df_timetables['timetableName']== timetableName]['timetableId'].values[0]
+        print(timetableId)
         
         df_new_role = pd.DataFrame([{'resourceId':resourceId, 'resourceName':resourceName, 'totalAmount':totalAmount, \
                             'costPerHour':costPerHour, 'timetableId':timetableId}])
@@ -222,7 +245,7 @@ class ActionAddResource(Action):
         df_transformed.loc[df_transformed['taskName'].str.lower() == task_new_role.lower(), 'totalAmount'] = totalAmount
         df_transformed.loc[df_transformed['taskName'].str.lower() == task_new_role.lower(), 'costPerHour'] = costPerHour
         df_transformed.loc[df_transformed['taskName'].str.lower() == task_new_role.lower(), 'timetableId'] = timetableId
-        
+
         ptt_s = '<qbp:elements>'
         ptt_e = '</qbp:elements>'
         elements = u.extract_bpmn_resources(model_path, ptt_s, ptt_e)
@@ -270,9 +293,10 @@ class ActionAddResource(Action):
         with open(new_model_path, 'w+') as new_file:
             new_file.write(new_model)
             
-        csv_output_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/outputs/resources/output_add_resource_{}.csv'.format(resourceName.replace(' ', '_'))
+        sce_name = resourceName.replace(' ', '_')
+        csv_output_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/outputs/resources/output_add_resource_{}.csv'.format(sce_name)
         u.execute_simulator_simple(bimp_path, new_model_path, csv_output_path)
-        output_message = u.return_message_stats(csv_output_path, 'Addition of resource {}'.format(resourceName))
+        output_message = u.return_message_stats(csv_output_path, 'Addition of resource {}'.format(sce_name))
         
         csv_org_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/outputs/resources/output_baseline.csv'
         u.execute_simulator_simple(bimp_path, model_path, csv_org_path)
@@ -281,7 +305,13 @@ class ActionAddResource(Action):
         dispatcher.utter_message(text=org_message)
         dispatcher.utter_message(text=output_message)
         
-        return []
+        return [SlotSet("add_resource_name", None),
+                SlotSet("add_resource_amount", None),
+                SlotSet("add_resource_cost", None),
+                SlotSet("add_resource_time_table", None),
+                SlotSet("comparison_scenario", new_model_path),
+                SlotSet("name_scenario", sce_name),
+                SlotSet("add_resource_new_role", None)]
 
 class ActionIncreaseDemand(Action):
     """
@@ -301,13 +331,13 @@ class ActionIncreaseDemand(Action):
         input_m = next(tracker.get_latest_entity_values("inc_percentage"))
         inc_percentage = float(input_m)
         percentage = inc_percentage/100 if inc_percentage > 1 else inc_percentage 
-
+        sce_name = str(int(percentage*100))
         new_model_path = u.modify_bimp_model_instances(model_path, percentage)
-        csv_output_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/outputs/demand/output_inc_demand_{}.csv'.format(int(percentage*100))
+        csv_output_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/outputs/demand/output_inc_demand_{}.csv'.format(sce_name)
        
         u.execute_simulator_simple(bimp_path, new_model_path, csv_output_path)
 
-        output_message = u.return_message_stats(csv_output_path, 'Increased demand in {} percent'.format(int(100*percentage)))
+        output_message = u.return_message_stats(csv_output_path, 'Increased demand in {} percent'.format(sce_name))
 
         csv_org_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/outputs/demand/output_baseline.csv'
         u.execute_simulator_simple(bimp_path, model_path, csv_org_path)
@@ -315,7 +345,9 @@ class ActionIncreaseDemand(Action):
 
         dispatcher.utter_message(text=org_message)
         dispatcher.utter_message(output_message)
-        return []
+
+        return [SlotSet("comparison_scenario", new_model_path),
+                SlotSet("name_scenario", sce_name)]
 
 class ActionDecreaseDemand(Action):
     """
@@ -335,14 +367,15 @@ class ActionDecreaseDemand(Action):
         input_m = next(tracker.get_latest_entity_values("dec_percentage"), None)
         dec_percentage = float(input_m)
         percentage = dec_percentage/100 if np.abs(dec_percentage) > 1 else dec_percentage
-            
+        sce_name = int(np.abs(percentage)*100)
+
         new_model_path = u.modify_bimp_model_instances(model_path, percentage)
 
-        csv_output_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/outputs/demand/output_dec_demand_{}.csv'.format(int(np.abs(percentage)*100))
+        csv_output_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/outputs/demand/output_dec_demand_{}.csv'.format(sce_name)
         
         u.execute_simulator_simple(bimp_path, new_model_path, csv_output_path)
 
-        output_message = u.return_message_stats(csv_output_path, 'Decreased demand in {} percent'.format(int(100*np.abs(percentage))))
+        output_message = u.return_message_stats(csv_output_path, 'Decreased demand in {} percent'.format(sce_name))
 
         csv_org_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/outputs/demand/output_baseline.csv'
         u.execute_simulator_simple(bimp_path, model_path, csv_org_path)
@@ -350,7 +383,9 @@ class ActionDecreaseDemand(Action):
 
         dispatcher.utter_message(text=org_message)
         dispatcher.utter_message(output_message)
-        return []
+        
+        return [SlotSet("comparison_scenario", new_model_path),
+                SlotSet("name_scenario", sce_name)]
 
 class ValidateChangeResourcesForm(FormValidationAction):
 
@@ -485,7 +520,11 @@ class ActionChangeResource(Action):
         dispatcher.utter_message(text=org_message)
         dispatcher.utter_message(text=output_message)
 
-        return []
+        return [SlotSet("change_resources_role_modify", new_model_path),
+                SlotSet("change_resources_new_amount", new_model_path),
+                SlotSet("change_resources_new_cost", new_model_path),
+                SlotSet("comparison_scenario", new_model_path),
+                SlotSet("name_scenario", mod_name)]
 
 class ValidateFastTaskForm(FormValidationAction):
 
@@ -581,6 +620,7 @@ class ActionFastTask(Action):
         df_tasks, task_dist = u.extract_task_add_info(model_path)
         
         task = tracker.get_slot("fast_task_name")
+
         percentage = int(tracker.get_slot("fast_task_percentage"))/100
 
         df_tasks.loc[df_tasks['name'].str.lower() == task.lower(), ['mean']] = (1-percentage)*int(df_tasks[df_tasks['name'].str.lower() == task.lower()]['mean'].values[0])
@@ -629,7 +669,10 @@ class ActionFastTask(Action):
         dispatcher.utter_message(text=org_message)
         dispatcher.utter_message(text=output_message)
 
-        return []
+        return [SlotSet("fast_task_name", None),
+                SlotSet("comparison_scenario", new_model_path),
+                SlotSet("name_scenario", sce_name),
+                SlotSet("fast_task_percentage", None)]
 
 class ValidateSlowTaskForm(FormValidationAction):
 
@@ -773,7 +816,10 @@ class ActionSlowTask(Action):
         dispatcher.utter_message(text=org_message)
         dispatcher.utter_message(text=output_message)
 
-        return []
+        return [SlotSet("slow_task_name", None),
+                SlotSet("comparison_scenario", new_model_path),
+                SlotSet("name_scenario", sce_name),
+                SlotSet("slow_task_percentage", None)]
 
 class ValidateRemoveResourceskForm(FormValidationAction):
 
@@ -929,7 +975,10 @@ class ActionRemoveResources(Action):
         dispatcher.utter_message(text=org_message)
         dispatcher.utter_message(text=output_message)
 
-        return []
+        return [SlotSet("remove_resources_role", None),
+                SlotSet("comparison_scenario", new_model_path),
+                SlotSet("name_scenario", sce_name),
+                SlotSet("remove_resources_transfer_role", None)]
 
 class ValidateCreateWorkingTimeForm(FormValidationAction):
 
@@ -1205,6 +1254,7 @@ class ActionCreateWorkingTime(Action):
         df_resources = pd.DataFrame(data)
 
         res_change_tt = tracker.get_slot("create_working_time_resource")
+
         df_resources.loc[df_resources['name'] == res_change_tt, 'timetableId'] = tt_id
 
         format_time_tables = """    <qbp:timetables>{}</qbp:timetables>"""
@@ -1264,8 +1314,15 @@ class ActionCreateWorkingTime(Action):
         dispatcher.utter_message(text=org_message)
         dispatcher.utter_message(text=output_message)
         
-        return []
-
+        return [SlotSet("create_working_time_id", None),
+                SlotSet("create_working_time_name", None),
+                SlotSet("create_working_time_from_time", None),
+                SlotSet("create_working_time_to_time", None),
+                SlotSet("create_working_time_from_weekday", None),
+                SlotSet("create_working_time_resource", None),
+                SlotSet("comparison_scenario", new_model_path),
+                SlotSet("name_scenario", sce_name),
+                SlotSet("create_working_time_to_weekday", None)]
 
 class ValidateModifyWorkingTimeForm(FormValidationAction):
 
@@ -1549,11 +1606,13 @@ class ActionModifyWorkingTime(Action):
         dispatcher.utter_message(text=org_message)
         dispatcher.utter_message(text=output_message)
         
-        return []
-
-
-
-
+        return [SlotSet("modify_working_time_name", None),
+                SlotSet("modify_working_time_from_time", None),
+                SlotSet("modify_working_time_to_time", None),
+                SlotSet("modify_working_time_from_weekday", None),
+                SlotSet("comparison_scenario", new_model_path),
+                SlotSet("name_scenario", sce_name),
+                SlotSet("modify_working_time_to_weekday", None)]
 
 class ValidateAutomateTaskForm(FormValidationAction):
 
@@ -1702,4 +1761,57 @@ class ActionAutomateTask(Action):
             dispatcher.utter_message(text=org_message)
             dispatcher.utter_message(text=output_message)
         
+        return [SlotSet("automate_task_name", None),
+                SlotSet("comparison_scenario", new_model_path),
+                SlotSet("name_scenario", sce_name),
+                SlotSet("automate_task_percentage", None)]
+
+class AskMoreInformationForm(FormAction):
+
+    def name(self):
+        """Unique identifier of the form"""
+        return "more_information_form"
+
+    def required_slots(tracker: Tracker) -> List[Text]:
+        """A list of required slots that the form has to fill"""
+
+        return ["more_information"]
+
+    def submit(self):
+        """
+        Define what the form has to do
+        after all required slots are filled
+        """
         return []
+
+class AskMoreInformation(Action):
+
+    def name(self) -> Text:
+        return "action_more_information"
+
+    def run(self, dispatcher: CollectingDispatcher,
+            tracker: Tracker,
+            domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+
+        bimp_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/bimp/qbp-simulator-engine_with_csv_statistics.jar'
+        model_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/inputs/PurchasingExample.bpmn'
+
+        ask_more_info = tracker.get_slot("more_information")
+        comparison_scenario = tracker.get_slot("comparison_scenario")
+        name_scenario = tracker.get_slot("name_scenario")
+
+        if ask_more_info.lower() == 'yes':
+            csv_output_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/outputs/automate_task/output_{}.csv'.format(name_scenario)
+            u.execute_simulator_simple(bimp_path, comparison_scenario, csv_output_path)
+            output_message = u.return_message_stats_complete(csv_output_path, '{}'.format(' '.join(name_scenario.split('_'))))
+
+            csv_org_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/outputs/automate_task/output_baseline.csv'
+            u.execute_simulator_simple(bimp_path, model_path, csv_org_path)
+            org_message = u.return_message_stats_complete(csv_org_path, 'Base')
+
+            dispatcher.utter_message(text=org_message)
+            dispatcher.utter_message(text=output_message)
+
+        return [SlotSet("more_information", None),
+                SlotSet("comparison_scenario", None),
+                SlotSet("name_scenario", None)]

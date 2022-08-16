@@ -7,6 +7,11 @@ rules:
   - intent: greeting
   - action: utter_greeting
 
+- rule: Print the message of Help
+  steps:
+  - intent: help
+  - action: action_help
+
 - rule: Say goodbye anytime the user says goodbye
   steps:
   - intent: goodbye
@@ -16,56 +21,77 @@ rules:
   steps:
   - intent: increase_demand
   - action: action_increase_demand
+  - action: more_information_form
+  - action: action_more_information
+
 
 - rule: Decrease demand rule
   steps:
   - intent: decrease_demand
   - action: action_decrease_demand
+  - action: more_information_form
+  - action: action_more_information
 
 - rule: activate add resources form
   steps:
     - intent: add_resources
     - action: add_resources_form
     - action: action_add_resources
+    - action: more_information_form
+    - action: action_more_information
 
 - rule: activate change resources form
   steps:
     - intent: change_resources
     - action: change_resources_form
     - action: action_change_resources
+    - action: more_information_form
+    - action: action_more_information
 
 - rule: activate fast task form
   steps:
     - intent: fast_task
     - action: fast_task_form
     - action: action_fast_task
+    - action: more_information_form
+    - action: action_more_information
 
 - rule: activate slow task form
   steps:
     - intent: slow_task
     - action: slow_task_form
     - action: action_slow_task
+    - action: more_information_form
+    - action: action_more_information
 
 - rule: activate remove resources form
   steps:
     - intent: remove_resources
     - action: remove_resources_form
     - action: action_remove_resources
+    - action: more_information_form
+    - action: action_more_information
 
 - rule: activate create working times form
   steps:
     - intent: create_working_time
     - action: create_working_time_form
     - action: action_create_working_time
+    - action: more_information_form
+    - action: action_more_information
 
 - rule: activate modify working times form
   steps:
     - intent: modify_working_time
     - action: modify_working_time_form
     - action: action_modify_working_time
+    - action: more_information_form
+    - action: action_more_information
 
 - rule: activate automate task form
   steps:
     - intent: automate_task
     - action: automate_task_form
     - action: action_automate_task
+    - action: more_information_form
+    - action: action_more_information

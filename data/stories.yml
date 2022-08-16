@@ -6,12 +6,20 @@ stories:
   - intent: greeting
   - action: utter_greeting
 
+- story: help
+  steps:
+  - intent: help
+  - action: action_help
+
 - story: 10 percentage increase demand
   steps:
   - intent: greeting
   - action: utter_greeting
   - intent: increase_demand
   - action: action_increase_demand
+  - action: more_information_form
+  - active_loop: more_information_form
+  - action: action_more_information
   - intent: goodbye
   - action: utter_goodbye
 
@@ -21,6 +29,9 @@ stories:
   - action: utter_greeting
   - intent: decrease_demand
   - action: action_decrease_demand
+  - action: more_information_form
+  - active_loop: more_information_form
+  - action: action_more_information
   - intent: goodbye
   - action: utter_goodbye
 
@@ -32,6 +43,9 @@ stories:
   - action: add_resources_form
   - active_loop: add_resources_form
   - action: action_add_resources
+  - action: more_information_form
+  - active_loop: more_information_form
+  - action: action_more_information
   - intent: goodbye
   - action: utter_goodbye
 
@@ -43,6 +57,9 @@ stories:
   - action: change_resources_form
   - active_loop: change_resources_form
   - action: action_change_resources
+  - action: more_information_form
+  - active_loop: more_information_form
+  - action: action_more_information
   - intent: goodbye
   - action: utter_goodbye
 
@@ -54,6 +71,9 @@ stories:
   - action: fast_task_form
   - active_loop: fast_task_form
   - action: action_fast_task
+  - action: more_information_form
+  - active_loop: more_information_form
+  - action: action_more_information
   - intent: goodbye
   - action: utter_goodbye
 
@@ -65,6 +85,9 @@ stories:
   - action: slow_task_form
   - active_loop: slow_task_form
   - action: action_slow_task
+  - action: more_information_form
+  - active_loop: more_information_form
+  - action: action_more_information
   - intent: goodbye
   - action: utter_goodbye
 
@@ -76,6 +99,9 @@ stories:
   - action: remove_resources_form
   - active_loop: remove_resources_form
   - action: action_remove_resources
+  - action: more_information_form
+  - active_loop: more_information_form
+  - action: action_more_information
   - intent: goodbye
   - action: utter_goodbye
 
@@ -87,6 +113,9 @@ stories:
   - action: create_working_time_form
   - active_loop: create_working_time_form
   - action: action_create_working_time
+  - action: more_information_form
+  - active_loop: more_information_form
+  - action: action_more_information
   - intent: goodbye
   - action: utter_goodbye
 
@@ -98,6 +127,9 @@ stories:
   - action: modify_working_time_form
   - active_loop: modify_working_time_form
   - action: action_modify_working_time
+  - action: more_information_form
+  - active_loop: more_information_form
+  - action: action_more_information
   - intent: goodbye
   - action: utter_goodbye
 
@@ -109,5 +141,8 @@ stories:
   - action: automate_task_form
   - active_loop: automate_task_form
   - action: action_automate_task
+  - action: more_information_form
+  - active_loop: more_information_form
+  - action: action_more_information
   - intent: goodbye
   - action: utter_goodbye
