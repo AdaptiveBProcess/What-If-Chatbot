@@ -16,15 +16,21 @@ from rasa_sdk.forms import FormValidationAction
 from rasa_core_sdk.forms import FormAction
 from rasa_sdk.events import SlotSet
 from rasa_sdk.events import AllSlotsReset
+from typing import Dict, Text, List
+from rasa_sdk.events import EventType
+
 
 import numpy as np
 import pandas as pd
 import re
+from glob import glob
 import string
 import random
 import uuid
 from datetime import datetime
 import time
+import json
+import os
 
 from . import utils_chatbot as u
 
@@ -34,28 +40,28 @@ class ValidateAddResourcesForm(FormValidationAction):
         return "validate_add_resources_form"
 
     @staticmethod
-    def add_resource_time_table_db() -> List[Text]:
+    def add_resource_time_table_db(tracker) -> List[Text]:
         """Database of supported resource timetables."""
 
-        model_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/inputs/PurchasingExample.bpmn'
+        model_path = tracker.get_slot("model")
         df_timetables = u.extract_timetables(model_path)
 
         return list(df_timetables['timetableName'])
 
     @staticmethod
-    def add_resource_new_role_db() -> List[Text]:
+    def add_resource_new_role_db(tracker) -> List[Text]:
         """Database of supported roles for new role."""
 
-        model_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/inputs/PurchasingExample.bpmn'
+        model_path = tracker.get_slot("model")
         df_tasks = u.extract_tasks(model_path)
 
         return list(df_tasks['taskName'])
 
     @staticmethod
-    def add_resource_name_db() -> List[Text]:
+    def add_resource_name_db(tracker) -> List[Text]:
         """Database of supported roles for new role."""
 
-        model_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/inputs/PurchasingExample.bpmn'
+        model_path = tracker.get_slot("model")
         df_resources = u.extract_resources(model_path)
 
         return list(df_resources['resourceName'])
@@ -79,14 +85,15 @@ class ValidateAddResourcesForm(FormValidationAction):
     ) -> Dict[Text, Any]:
         """Validate add_resource_name value."""
 
-        resources = self.add_resource_name_db()
+        resources = self.add_resource_name_db(tracker)
 
         if value.lower() not in [x.lower() for x in resources]:
             # validation succeeded, set the value of the "cuisine" slot to value
             return {"add_resource_name": value}
         else:
-            dispatcher.utter_message('\n'.join(resources))
             dispatcher.utter_message(response="utter_wrong_add_resource_name")
+            for resource in resources:
+                dispatcher.utter_message(resource)
             # validation failed, set this slot to None, meaning the
             # user will be asked for the slot again
             return {"add_resource_name": None}
@@ -100,14 +107,15 @@ class ValidateAddResourcesForm(FormValidationAction):
     ) -> Dict[Text, Any]:
         """Validate add_resource_time_table value."""
 
-        timetables = self.add_resource_time_table_db()
+        timetables = self.add_resource_time_table_db(tracker)
 
         if value.lower() in [x.lower() for x in timetables]:
             # validation succeeded, set the value of the "cuisine" slot to value
             return {"add_resource_time_table": value}
         else:
             dispatcher.utter_message(response="utter_wrong_add_resource_time_table")
-            dispatcher.utter_message('\n'.join(timetables))
+            for timetable in timetables:
+                dispatcher.utter_message(timetable)
             # validation failed, set this slot to None, meaning the
             # user will be asked for the slot again
             return {"add_resource_time_table": None}
@@ -121,14 +129,15 @@ class ValidateAddResourcesForm(FormValidationAction):
     ) -> Dict[Text, Any]:
         """Validate add_resource_new_role value."""
 
-        tasks = self.add_resource_new_role_db()
+        tasks = self.add_resource_new_role_db(tracker)
         
         if value.lower() in [x.lower() for x in tasks]:
             # validation succeeded, set the value of the "cuisine" slot to value
             return {"add_resource_new_role": value}
         else:
             dispatcher.utter_message(response="utter_wrong_add_resource_new_role")
-            dispatcher.utter_message('\n'.join(tasks))
+            for task in tasks:
+                dispatcher.utter_message(task)
             # validation failed, set this slot to None, meaning the
             # user will be asked for the slot again
             return {"add_resource_new_role": None}
@@ -202,9 +211,46 @@ class ActionHelp(Action):
     - Scenarios of creation of working timetables.
     - Scenarios of modification of working timetables.
     - Scenarios of process task automation.
-        """
-        dispatcher.utter_message(text=msg)
+    - Scenarios of comparison between generated models."""
 
+        msgs = msg.split('\n')
+        for msg_h in msgs:
+            dispatcher.utter_message(text=msg_h)
+
+class AskForAddResourceTimeTable(Action):
+    def name(self) -> Text:
+        return "action_ask_add_resource_time_table"
+
+    def run(
+        self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict
+    ) -> List[EventType]:
+        
+        dispatcher.utter_message(text="Which of those time tables do you want to assign to the new Role?")
+        
+        model_path = tracker.get_slot("model")
+        df_timetables = u.extract_timetables(model_path)
+        for timetable in df_timetables['timetableName']:
+            dispatcher.utter_message(text=timetable)
+        
+        return []
+
+class AskForAddResourceNewRole(Action):
+    def name(self) -> Text:
+        return "action_ask_add_resource_new_role"
+
+    def run(
+        self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict
+    ) -> List[EventType]:
+        
+        dispatcher.utter_message(text="To which task do you want to assign the new resource?")
+        
+        model_path = tracker.get_slot("model")
+        df_tasks = u.extract_tasks(model_path)
+        for task in df_tasks['taskName']:
+            dispatcher.utter_message(text=task)
+        
+        return []
+  
 class ActionAddResource(Action):
     def name(self) -> Text:
         return "action_add_resources"
@@ -214,7 +260,7 @@ class ActionAddResource(Action):
             domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
 
         bimp_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/bimp/qbp-simulator-engine_with_csv_statistics.jar'
-        model_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/inputs/PurchasingExample.bpmn'
+        model_path = tracker.get_slot("model")
         df_resources = u.extract_resources(model_path)
         df_timetables = u.extract_timetables(model_path)
         
@@ -226,7 +272,6 @@ class ActionAddResource(Action):
         timetableName = tracker.get_slot("add_resource_time_table")
                 
         timetableId = df_timetables[df_timetables['timetableName']== timetableName]['timetableId'].values[0]
-        print(timetableId)
         
         df_new_role = pd.DataFrame([{'resourceId':resourceId, 'resourceName':resourceName, 'totalAmount':totalAmount, \
                             'costPerHour':costPerHour, 'timetableId':timetableId}])
@@ -326,7 +371,8 @@ class ActionIncreaseDemand(Action):
             domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
         
         bimp_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/bimp/qbp-simulator-engine_with_csv_statistics.jar'
-        model_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/inputs/PurchasingExample.bpmn'
+        model_path = tracker.get_slot("model")
+
 
         input_m = next(tracker.get_latest_entity_values("inc_percentage"))
         inc_percentage = float(input_m)
@@ -362,12 +408,13 @@ class ActionDecreaseDemand(Action):
             domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
         
         bimp_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/bimp/qbp-simulator-engine_with_csv_statistics.jar'
-        model_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/inputs/PurchasingExample.bpmn'
+        model_path = tracker.get_slot("model")
 
-        input_m = next(tracker.get_latest_entity_values("dec_percentage"), None)
+        input_m = next(tracker.get_latest_entity_values("dec_percentage"))
         dec_percentage = float(input_m)
         percentage = dec_percentage/100 if np.abs(dec_percentage) > 1 else dec_percentage
-        sce_name = int(np.abs(percentage)*100)
+        p = int(np.abs(percentage)*100)
+        sce_name = 'Decreased demand in {} percent'.format(p)
 
         new_model_path = u.modify_bimp_model_instances(model_path, percentage)
 
@@ -375,7 +422,7 @@ class ActionDecreaseDemand(Action):
         
         u.execute_simulator_simple(bimp_path, new_model_path, csv_output_path)
 
-        output_message = u.return_message_stats(csv_output_path, 'Decreased demand in {} percent'.format(sce_name))
+        output_message = u.return_message_stats(csv_output_path, sce_name)
 
         csv_org_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/outputs/demand/output_baseline.csv'
         u.execute_simulator_simple(bimp_path, model_path, csv_org_path)
@@ -393,10 +440,10 @@ class ValidateChangeResourcesForm(FormValidationAction):
         return "validate_change_resources_form"
 
     @staticmethod
-    def change_resources_role_modify_db() -> List[Text]:
+    def change_resources_role_modify_db(tracker) -> List[Text]:
         """Database of supported resource timetables."""
 
-        model_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/inputs/PurchasingExample.bpmn'
+        model_path = tracker.get_slot("model")
         df_resources = u.extract_resources(model_path)
 
         return list(df_resources['resourceName'])
@@ -420,49 +467,50 @@ class ValidateChangeResourcesForm(FormValidationAction):
     ) -> Dict[Text, Any]:
         """Validate add_resource_name value."""
 
-        resources = self.change_resources_role_modify_db()
+        resources = self.change_resources_role_modify_db(tracker)
 
         if value.lower() in [x.lower() for x in resources]:
             # validation succeeded, set the value of the "cuisine" slot to value
             return {"change_resources_role_modify": value}
         else:
             dispatcher.utter_message(response="utter_wrong_change_resources_role_modify")
-            dispatcher.utter_message('\n'.join(resources))
+            for resource in resources:
+                dispatcher.utter_message(resource)
             # validation failed, set this slot to None, meaning the
             # user will be asked for the slot again
             return {"change_resources_role_modify": None}
 
-    def validate_change_resource_new_amount(
+    def validate_change_resources_new_amount(
         self,
         value: Text,
         dispatcher: CollectingDispatcher,
         tracker: Tracker,
         domain: Dict[Text, Any],
     ) -> Dict[Text, Any]:
-        """Validate change_resource_new_amount value."""
+        """Validate change_resources_new_amount value."""
 
         if self.is_int(value) and int(value) > 0:
-            return {"change_resource_new_amount": value}
+            return {"change_resources_new_amount": value}
         else:
             dispatcher.utter_message(response="utter_wrong_add_resource_amount")
             # validation failed, set slot to None
-            return {"change_resource_new_amount": None}
+            return {"change_resources_new_amount": None}
 
-    def validate_change_resource_new_cost(
+    def validate_change_resources_new_cost(
         self,
         value: Text,
         dispatcher: CollectingDispatcher,
         tracker: Tracker,
         domain: Dict[Text, Any],
     ) -> Dict[Text, Any]:
-        """Validate change_resource_new_cost value."""
+        """Validate change_resources_new_cost value."""
 
         if self.is_int(value) and int(value) > 0:
-            return {"change_resource_new_cost": value}
+            return {"change_resources_new_cost": value}
         else:
-            dispatcher.utter_message(response="utter_wrong_change_resource_new_cost")
+            dispatcher.utter_message(response="utter_wrong_change_resources_new_cost")
             # validation failed, set slot to None
-            return {"change_resource_new_cost": None}
+            return {"change_resources_new_cost": None}
 
 class ChangeResourcesForm(FormAction):
 
@@ -473,7 +521,7 @@ class ChangeResourcesForm(FormAction):
     def required_slots(tracker: Tracker) -> List[Text]:
         """A list of required slots that the form has to fill"""
 
-        return ["change_resources_role_modify", "change_resource_new_amount", "change_resource_new_cost"]
+        return ["change_resources_role_modify", "change_resources_new_amount", "change_resources_new_cost"]
 
     def submit(self):
         """
@@ -481,6 +529,23 @@ class ChangeResourcesForm(FormAction):
         after all required slots are filled
         """
 
+        return []
+
+class AskForChangeResourceRoleModify(Action):
+    def name(self) -> Text:
+        return "action_ask_change_resources_role_modify"
+
+    def run(
+        self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict
+    ) -> List[EventType]:
+        
+        dispatcher.utter_message(text="Which resource do you want to modify?")
+        
+        model_path = tracker.get_slot("model")
+        df_resources = u.extract_resources(model_path)
+        for resource in df_resources['resourceName']:
+            dispatcher.utter_message(text=resource)
+        
         return []
 
 class ActionChangeResource(Action):
@@ -492,13 +557,11 @@ class ActionChangeResource(Action):
             domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
 
         bimp_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/bimp/qbp-simulator-engine_with_csv_statistics.jar'
-        model_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/inputs/PurchasingExample.bpmn'
+        model_path = tracker.get_slot("model")
 
         df_resources = u.extract_resources(model_path)
         
         mod_res = tracker.get_slot("change_resources_role_modify")
-        amount = df_resources[df_resources['resourceName']==mod_res]['totalAmount'].values[0]
-        cost = df_resources[df_resources['resourceName']==mod_res]['costPerHour'].values[0]
         
         new_amount = tracker.get_slot("change_resources_new_amount")
         new_cost = tracker.get_slot("change_resources_new_cost")
@@ -507,7 +570,32 @@ class ActionChangeResource(Action):
         df_resources.loc[df_resources['resourceName']==mod_res, ['costPerHour']] = new_cost
         
         mod_name = mod_res.replace(' ', '_')
-        new_model_path = u.modify_bimp_model_resources(model_path, amount, new_amount, cost, new_cost)
+
+        resources = """    <qbp:resources>
+            {} 
+        </qbp:resources>"""
+
+        resource = """<qbp:resource id="{}" name="{}" totalAmount="{}" costPerHour="{}" timetableId="{}"/>"""
+        df_resources['resource'] = df_resources.apply(lambda x: resource.format(x['resourceId'], x['resourceName'], x['totalAmount'], \
+                                                                                x['costPerHour'], x['timetableId']
+                                                                                ), axis=1)
+        new_resources = resources.format("""""".join(df_resources['resource']))
+
+        with open(model_path) as f:
+            model = f.read()
+
+        ptt_s = '<qbp:resources>'
+        ptt_e = '</qbp:resources>'
+        resources_text = u.extract_bpmn_resources(model_path, ptt_s, ptt_e)
+
+        new_model = model.replace(resources_text, new_resources)
+
+        sce_name = '_mod_resource_{}'.format(mod_name)
+        new_model_path = model_path.split('.')[0] + sce_name + '.bpmn'
+        new_model_path = new_model_path.replace('inputs','inputs/resources/models')
+
+        with open(new_model_path, 'w+') as new_file:
+            new_file.write(new_model)
         
         csv_output_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/outputs/resources/output_mod_resource_{}.csv'.format(mod_name)
         u.execute_simulator_simple(bimp_path, new_model_path, csv_output_path)
@@ -520,9 +608,9 @@ class ActionChangeResource(Action):
         dispatcher.utter_message(text=org_message)
         dispatcher.utter_message(text=output_message)
 
-        return [SlotSet("change_resources_role_modify", new_model_path),
-                SlotSet("change_resources_new_amount", new_model_path),
-                SlotSet("change_resources_new_cost", new_model_path),
+        return [SlotSet("change_resources_role_modify", None),
+                SlotSet("change_resources_new_amount", None),
+                SlotSet("change_resources_new_cost", None),
                 SlotSet("comparison_scenario", new_model_path),
                 SlotSet("name_scenario", mod_name)]
 
@@ -532,10 +620,10 @@ class ValidateFastTaskForm(FormValidationAction):
         return "validate_fast_task_form"
 
     @staticmethod
-    def fast_task_name_db() -> List[Text]:
+    def fast_task_name_db(tracker) -> List[Text]:
         """Database of supported resource timetables."""
 
-        model_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/inputs/PurchasingExample.bpmn'
+        model_path = tracker.get_slot("model")
         df_tasks, task_dist = u.extract_task_add_info(model_path)
 
         return list(df_tasks['name'])
@@ -559,14 +647,15 @@ class ValidateFastTaskForm(FormValidationAction):
     ) -> Dict[Text, Any]:
         """Validate add_resource_name value."""
 
-        tasks = self.fast_task_name_db()
+        tasks = self.fast_task_name_db(tracker)
 
         if value.lower() in [x.lower() for x in tasks]:
             # validation succeeded, set the value of the "cuisine" slot to value
             return {"fast_task_name": value}
         else:
             dispatcher.utter_message(response="utter_wrong_fast_task_name")
-            dispatcher.utter_message('\n'.join(tasks))
+            for task in tasks:
+                dispatcher.utter_message(task)
             # validation failed, set this slot to None, meaning the
             # user will be asked for the slot again
             return {"fast_task_name": None}
@@ -586,6 +675,23 @@ class ValidateFastTaskForm(FormValidationAction):
             dispatcher.utter_message(response="utter_wrong_fast_task_percentage")
             # validation failed, set slot to None
             return {"fast_task_percentage": None}
+
+class AskForFastTaskName(Action):
+    def name(self) -> Text:
+        return "action_ask_fast_task_name"
+
+    def run(
+        self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict
+    ) -> List[EventType]:
+        
+        dispatcher.utter_message(text="Which task do you want to be faster?")
+        
+        model_path = tracker.get_slot("model")
+        df_tasks = u.extract_tasks(model_path)
+        for task in df_tasks['taskName']:
+            dispatcher.utter_message(text=task)
+        
+        return []
 
 class FastTaskForm(FormAction):
 
@@ -615,7 +721,7 @@ class ActionFastTask(Action):
             domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
 
         bimp_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/bimp/qbp-simulator-engine_with_csv_statistics.jar'
-        model_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/inputs/PurchasingExample.bpmn'
+        model_path = tracker.get_slot("model")
 
         df_tasks, task_dist = u.extract_task_add_info(model_path)
         
@@ -680,10 +786,10 @@ class ValidateSlowTaskForm(FormValidationAction):
         return "validate_slow_task_form"
 
     @staticmethod
-    def slow_task_name_db() -> List[Text]:
+    def slow_task_name_db(tracker) -> List[Text]:
         """Database of supported resource timetables."""
 
-        model_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/inputs/PurchasingExample.bpmn'
+        model_path = tracker.get_slot("model")
         df_tasks, _ = u.extract_task_add_info(model_path)
 
         return list(df_tasks['name'])
@@ -707,14 +813,15 @@ class ValidateSlowTaskForm(FormValidationAction):
     ) -> Dict[Text, Any]:
         """Validate add_resource_name value."""
 
-        tasks = self.slow_task_name_db()
+        tasks = self.slow_task_name_db(tracker)
 
         if value.lower() in [x.lower() for x in tasks]:
             # validation succeeded, set the value of the "cuisine" slot to value
             return {"slow_task_name": value}
         else:
             dispatcher.utter_message(response="utter_wrong_slow_task_name")
-            dispatcher.utter_message('\n'.join(tasks))
+            for task in tasks:
+                dispatcher.utter_message(task)
             # validation failed, set this slot to None, meaning the
             # user will be asked for the slot again
             return {"slow_task_name": None}
@@ -734,6 +841,23 @@ class ValidateSlowTaskForm(FormValidationAction):
             dispatcher.utter_message(response="utter_wrong_slow_task_percentage")
             # validation failed, set slot to None
             return {"slow_task_percentage": None}
+
+class AskForSlowTaskName(Action):
+    def name(self) -> Text:
+        return "action_ask_slow_task_name"
+
+    def run(
+        self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict
+    ) -> List[EventType]:
+        
+        dispatcher.utter_message(text="Which task do you want to be slower?")
+        
+        model_path = tracker.get_slot("model")
+        df_tasks = u.extract_tasks(model_path)
+        for task in df_tasks['taskName']:
+            dispatcher.utter_message(text=task)
+        
+        return []
 
 class SlowTaskForm(FormAction):
 
@@ -763,7 +887,7 @@ class ActionSlowTask(Action):
             domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
 
         bimp_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/bimp/qbp-simulator-engine_with_csv_statistics.jar'
-        model_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/inputs/PurchasingExample.bpmn'
+        model_path = tracker.get_slot("model")
 
         df_tasks, task_dist = u.extract_task_add_info(model_path)
         
@@ -827,10 +951,10 @@ class ValidateRemoveResourceskForm(FormValidationAction):
         return "validate_remove_resources_form"
 
     @staticmethod
-    def remove_resources_role_db() -> List[Text]:
+    def remove_resources_role_db(tracker) -> List[Text]:
         """Database of supported resource timetables."""
 
-        model_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/inputs/PurchasingExample.bpmn'
+        model_path = tracker.get_slot("model")
         df_resources = u.extract_resources(model_path)
 
         return list(df_resources['resourceName'])
@@ -844,14 +968,15 @@ class ValidateRemoveResourceskForm(FormValidationAction):
     ) -> Dict[Text, Any]:
         """Validate remove_resources_role value."""
 
-        resources = self.remove_resources_role_db()
+        resources = self.remove_resources_role_db(tracker)
 
         if value.lower() in [x.lower() for x in resources]:
             # validation succeeded, set the value of the "cuisine" slot to value
             return {"remove_resources_role": value}
         else:
             dispatcher.utter_message(response="utter_wrong_remove_resources_role")
-            dispatcher.utter_message('\n'.join(resources))
+            for resource in resources:
+                dispatcher.utter_message(resource)
             # validation failed, set this slot to None, meaning the
             # user will be asked for the slot again
             return {"remove_resources_role": None}
@@ -865,14 +990,15 @@ class ValidateRemoveResourceskForm(FormValidationAction):
     ) -> Dict[Text, Any]:
         """Validate remove_resources_transfer_role value."""
 
-        resources = self.remove_resources_role_db()
+        resources = self.remove_resources_role_db(tracker)
 
         if value.lower() in [x.lower() for x in resources]:
             # validation succeeded, set the value of the "cuisine" slot to value
             return {"remove_resources_transfer_role": value}
         else:
             dispatcher.utter_message(response="utter_wrong_remove_resources_transfer_role")
-            dispatcher.utter_message('\n'.join(resources))
+            for resource in resources:
+                dispatcher.utter_message(resource)
             # validation failed, set this slot to None, meaning the
             # user will be asked for the slot again
             return {"remove_resources_transfer_role": None}
@@ -896,6 +1022,40 @@ class RemoveResourcesForm(FormAction):
 
         return []
 
+class AskForRemoveResourceRole(Action):
+    def name(self) -> Text:
+        return "action_ask_remove_resources_role"
+
+    def run(
+        self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict
+    ) -> List[EventType]:
+        
+        dispatcher.utter_message(text="Which resource do you want to remove?")
+        
+        model_path = tracker.get_slot("model")
+        df_resources = u.extract_resources(model_path)
+        for resource in df_resources['resourceName']:
+            dispatcher.utter_message(text=resource)
+        
+        return []
+
+class AskForRemoveResourceTransferRole(Action):
+    def name(self) -> Text:
+        return "action_ask_remove_resources_transfer_role"
+
+    def run(
+        self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict
+    ) -> List[EventType]:
+        
+        dispatcher.utter_message(text="To which resource do you want to reallocate the resource removed tasks?")
+        
+        model_path = tracker.get_slot("model")
+        df_resources = u.extract_resources(model_path)
+        for resource in df_resources['resourceName']:
+            if resource != tracker.get_slot("remove_resources_role"):
+                dispatcher.utter_message(text=resource)        
+        return []
+
 class ActionRemoveResources(Action):
     def name(self) -> Text:
         return "action_remove_resources"
@@ -905,7 +1065,7 @@ class ActionRemoveResources(Action):
             domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
 
         bimp_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/bimp/qbp-simulator-engine_with_csv_statistics.jar'
-        model_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/inputs/PurchasingExample.bpmn'
+        model_path = tracker.get_slot("model")
 
         df_resources = u.extract_resources(model_path)
         df_timetables = u.extract_timetables(model_path)
@@ -963,10 +1123,11 @@ class ActionRemoveResources(Action):
         new_model_path = new_model_path.replace('inputs','inputs/resources/models')
         with open(new_model_path, 'w+') as new_file:
             new_file.write(new_model)
-            
+        
+        sce_name = 'Remotion of resource {}'.format(res_remove)
         csv_output_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/outputs/resources/output_rem_resource_{}.csv'.format(res_remove.replace(' ', '_'))
         u.execute_simulator_simple(bimp_path, new_model_path, csv_output_path)
-        output_message = u.return_message_stats(csv_output_path, 'Remotion of resource {}'.format(res_remove))
+        output_message = u.return_message_stats(csv_output_path, sce_name)
         
         csv_org_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/outputs/resources/output_baseline.csv'
         u.execute_simulator_simple(bimp_path, model_path, csv_org_path)
@@ -986,19 +1147,19 @@ class ValidateCreateWorkingTimeForm(FormValidationAction):
         return "validate_create_working_time_form"
 
     @staticmethod
-    def create_working_time_name_db() -> List[Text]:
+    def create_working_time_name_db(tracker) -> List[Text]:
         """Database of supported resource timetables."""
 
-        model_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/inputs/PurchasingExample.bpmn'
+        model_path = tracker.get_slot("model")
         df_timetables = u.extract_timetables(model_path)
 
         return list(df_timetables['timetableName'])
 
     @staticmethod
-    def create_working_time_resource_db() -> List[Text]:
+    def create_working_time_resource_db(tracker) -> List[Text]:
         """Database of supported resource timetables."""
 
-        model_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/inputs/PurchasingExample.bpmn'
+        model_path = tracker.get_slot("model")
         df_resources = u.extract_resources(model_path)
 
         return list(df_resources['resourceName'])
@@ -1036,14 +1197,15 @@ class ValidateCreateWorkingTimeForm(FormValidationAction):
     ) -> Dict[Text, Any]:
         """Validate create_working_time_name value."""
 
-        timetables = self.create_working_time_name_db()
+        timetables = self.create_working_time_name_db(tracker)
 
         if value.lower() not in [x.lower() for x in timetables]:
             # validation succeeded, set the value of the "cuisine" slot to value
             return {"create_working_time_name": value}
         else:
-            dispatcher.utter_message('\n'.join(timetables))
             dispatcher.utter_message(response="utter_wrong_create_working_time_name")
+            for timetable in timetables:
+                dispatcher.utter_message(timetable)
             # validation failed, set this slot to None, meaning the
             # user will be asked for the slot again
             return {"create_working_time_name": None}
@@ -1073,14 +1235,15 @@ class ValidateCreateWorkingTimeForm(FormValidationAction):
     ) -> Dict[Text, Any]:
         """Validate create_working_time_resource value."""
 
-        resources = self.create_working_time_resource_db()
+        resources = self.create_working_time_resource_db(tracker)
 
         if value.lower() in [x.lower() for x in resources]:
             # validation succeeded, set the value of the "cuisine" slot to value
             return {"create_working_time_resource": value}
         else:
-            dispatcher.utter_message('\n'.join(resources))
             dispatcher.utter_message(response="utter_wrong_create_working_time_resource")
+            for resource in resources:
+                dispatcher.utter_message(resource)
             # validation failed, set this slot to None, meaning the
             # user will be asked for the slot again
             return {"create_working_time_resource": None}
@@ -1116,8 +1279,9 @@ class ValidateCreateWorkingTimeForm(FormValidationAction):
             # validation succeeded, set the value of the "cuisine" slot to value
             return {"create_working_time_from_weekday": value}
         else:
-            dispatcher.utter_message('\n'.join(weekdays))
             dispatcher.utter_message(response="utter_wrong_create_working_time_from_weekday")
+            for weekday in weekdays:
+                dispatcher.utter_message(weekday)
             # validation failed, set this slot to None, meaning the
             # user will be asked for the slot again
             return {"create_working_time_from_weekday": None}
@@ -1137,8 +1301,9 @@ class ValidateCreateWorkingTimeForm(FormValidationAction):
             # validation succeeded, set the value of the "cuisine" slot to value
             return {"create_working_time_to_weekday": value}
         else:
-            dispatcher.utter_message('\n'.join(weekdays))
             dispatcher.utter_message(response="utter_wrong_create_working_time_to_weekday")
+            for weekday in weekdays:
+                dispatcher.utter_message(weekday)
             # validation failed, set this slot to None, meaning the
             # user will be asked for the slot again
             return {"create_working_time_to_weekday": None}
@@ -1163,6 +1328,23 @@ class CreateWorkingTimeForm(FormAction):
 
         return []
 
+class AskForCreateWorkingTimeResource(Action):
+    def name(self) -> Text:
+        return "action_ask_create_working_time_resource"
+
+    def run(
+        self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict
+    ) -> List[EventType]:
+        
+        dispatcher.utter_message(text="To which resource do you want to apply the new time table?")
+        
+        model_path = tracker.get_slot("model")
+        df_resources = u.extract_resources(model_path)
+        for resource in df_resources['resourceName']:
+            dispatcher.utter_message(text=resource)
+        
+        return []
+
 class ActionCreateWorkingTime(Action):
     def name(self) -> Text:
         return "action_create_working_time"
@@ -1172,7 +1354,7 @@ class ActionCreateWorkingTime(Action):
             domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
 
         bimp_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/bimp/qbp-simulator-engine_with_csv_statistics.jar'
-        model_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/inputs/PurchasingExample.bpmn'
+        model_path = tracker.get_slot("model")
   
         ptt_s = '<qbp:timetables>'
         ptt_e = '</qbp:timetables>'
@@ -1223,8 +1405,8 @@ class ActionCreateWorkingTime(Action):
         new_tt_rules = []
         from_time = tracker.get_slot("create_working_time_from_time")
         to_time = tracker.get_slot("create_working_time_to_time")
-        from_weekday = tracker.get_slot("create_working_time_from_weekday")
-        to_weekday = tracker.get_slot("create_working_time_to_weekday")
+        from_weekday = tracker.get_slot("create_working_time_from_weekday").upper()
+        to_weekday = tracker.get_slot("create_working_time_to_weekday").upper()
         rule = [from_time, to_time, from_weekday, to_weekday]
         new_tt_rules.append(rule)
 
@@ -1296,14 +1478,14 @@ class ActionCreateWorkingTime(Action):
         
         new_model = new_model.replace(resources_text, new_resources)
     
-        sce_name = ('_' + '_'.join(scenario_name)).replace('/', '_')
+        sce_name = '_' + ('_'.join(scenario_name)).replace('/', '_')
         new_model_path = model_path.split('.')[0] + sce_name + '.bpmn'
         new_model_path = new_model_path.replace('inputs','inputs/working_tables/models')
         
         with open(new_model_path, 'w+') as new_file:
             new_file.write(new_model)
             
-        csv_output_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/outputs/working_tables/output_{}.csv'.format(sce_name)
+        csv_output_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/outputs/working_tables/output{}.csv'.format(sce_name)
         u.execute_simulator_simple(bimp_path, new_model_path, csv_output_path)
         output_message = u.return_message_stats(csv_output_path, '{}'.format(' '.join(sce_name.split('_'))))
         
@@ -1330,19 +1512,19 @@ class ValidateModifyWorkingTimeForm(FormValidationAction):
         return "validate_modify_working_time_form"
 
     @staticmethod
-    def modify_working_time_name_db() -> List[Text]:
+    def modify_working_time_name_db(tracker) -> List[Text]:
         """Database of supported resource timetables."""
 
-        model_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/inputs/PurchasingExample.bpmn'
+        model_path = tracker.get_slot("model")
         df_timetables = u.extract_timetables(model_path)
 
         return list(df_timetables['timetableName'])
 
     @staticmethod
-    def modify_working_time_resource_db() -> List[Text]:
+    def modify_working_time_resource_db(tracker) -> List[Text]:
         """Database of supported resource timetables."""
 
-        model_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/inputs/PurchasingExample.bpmn'
+        model_path = tracker.get_slot("model")
         df_resources = u.extract_resources(model_path)
 
         return list(df_resources['resourceName'])
@@ -1380,14 +1562,15 @@ class ValidateModifyWorkingTimeForm(FormValidationAction):
     ) -> Dict[Text, Any]:
         """Validate modify_working_time_name value."""
 
-        timetables = self.modify_working_time_name_db()
+        timetables = self.modify_working_time_name_db(tracker)
 
         if value.lower() in [x.lower() for x in timetables]:
             # validation succeeded, set the value of the "cuisine" slot to value
             return {"modify_working_time_name": value}
         else:
-            dispatcher.utter_message('\n'.join(timetables))
             dispatcher.utter_message(response="utter_wrong_modify_working_time_name")
+            for timetable in timetables:
+                dispatcher.utter_message(timetable)
             # validation failed, set this slot to None, meaning the
             # user will be asked for the slot again
             return {"modify_working_time_name": None}
@@ -1439,8 +1622,9 @@ class ValidateModifyWorkingTimeForm(FormValidationAction):
             # validation succeeded, set the value of the "cuisine" slot to value
             return {"modify_working_time_from_weekday": value}
         else:
-            dispatcher.utter_message('\n'.join(weekdays))
             dispatcher.utter_message(response="utter_wrong_modify_working_time_from_weekday")
+            for weekday in weekdays:
+                dispatcher.utter_message(weekday)
             # validation failed, set this slot to None, meaning the
             # user will be asked for the slot again
             return {"modify_working_time_from_weekday": None}
@@ -1460,8 +1644,9 @@ class ValidateModifyWorkingTimeForm(FormValidationAction):
             # validation succeeded, set the value of the "cuisine" slot to value
             return {"modify_working_time_to_weekday": value}
         else:
-            dispatcher.utter_message('\n'.join(weekdays))
             dispatcher.utter_message(response="utter_wrong_modify_working_time_to_weekday")
+            for weekday in weekdays:
+                dispatcher.utter_message(weekday)
             # validation failed, set this slot to None, meaning the
             # user will be asked for the slot again
             return {"modify_working_time_to_weekday": None}
@@ -1486,6 +1671,25 @@ class ModifyWorkingTimeForm(FormAction):
 
         return []
 
+class AskForModifyWorkingTimeName(Action):
+    def name(self) -> Text:
+        return "action_ask_modify_working_time_name"
+
+    def run(
+        self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict
+    ) -> List[EventType]:
+
+        dispatcher.utter_message(text="Enter the Name for the time table that you want to modify.")
+
+        model_path = tracker.get_slot("model")
+        df_timetables = u.extract_timetables(model_path)
+        for timetable in df_timetables['timetableName']:
+            dispatcher.utter_message(text=timetable)
+
+        return []
+
+
+
 class ActionModifyWorkingTime(Action):
     def name(self) -> Text:
         return "action_modify_working_time"
@@ -1495,7 +1699,7 @@ class ActionModifyWorkingTime(Action):
             domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
 
         bimp_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/bimp/qbp-simulator-engine_with_csv_statistics.jar'
-        model_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/inputs/PurchasingExample.bpmn'
+        model_path = tracker.get_slot("model")
 
         ptt_s = '<qbp:timetables>'
         ptt_e = '</qbp:timetables>'
@@ -1551,8 +1755,8 @@ class ActionModifyWorkingTime(Action):
         new_tt_rules = []
         from_time = tracker.get_slot("modify_working_time_from_time")
         to_time = tracker.get_slot("modify_working_time_to_time")
-        from_weekday = tracker.get_slot("modify_working_time_from_weekday")
-        to_weekday = tracker.get_slot("modify_working_time_to_weekday")
+        from_weekday = tracker.get_slot("modify_working_time_from_weekday").upper()
+        to_weekday = tracker.get_slot("modify_working_time_to_weekday").upper()
         rule = [from_time, to_time, from_weekday, to_weekday]
         new_tt_rules.append(rule)
 
@@ -1595,7 +1799,7 @@ class ActionModifyWorkingTime(Action):
         with open(new_model_path, 'w+') as new_file:
             new_file.write(new_model)
             
-        csv_output_path = 'C:/CursosMaestria/Tesis/Chatbot/outputs/working_tables/output_{}.csv'.format(sce_name)
+        csv_output_path = 'C:/CursosMaestria/Tesis/Chatbot/outputs/working_tables/output{}.csv'.format(sce_name)
         u.execute_simulator_simple(bimp_path, new_model_path, csv_output_path)
         output_message = u.return_message_stats(csv_output_path, '{}'.format(' '.join(sce_name.split('_'))))
         
@@ -1620,10 +1824,10 @@ class ValidateAutomateTaskForm(FormValidationAction):
         return "validate_automate_task_form"
 
     @staticmethod
-    def automate_task_name_db() -> List[Text]:
+    def automate_task_name_db(tracker) -> List[Text]:
         """Database of supported resource timetables."""
 
-        model_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/inputs/PurchasingExample.bpmn'
+        model_path = tracker.get_slot("model")
         df_tasks = u.extract_tasks(model_path)
 
         return list(df_tasks['taskName'])
@@ -1646,14 +1850,15 @@ class ValidateAutomateTaskForm(FormValidationAction):
     ) -> Dict[Text, Any]:
         """Validate automate_task_name value."""
 
-        tasks = self.automate_task_name_db()
+        tasks = self.automate_task_name_db(tracker)
 
         if value.lower() in [x.lower() for x in tasks]:
             # validation succeeded, set the value of the "cuisine" slot to value
             return {"automate_task_name": value}
         else:
-            dispatcher.utter_message('\n'.join(tasks))
             dispatcher.utter_message(response="utter_wrong_automate_task_name")
+            for task in tasks:
+                dispatcher.utter_message(task)
             # validation failed, set this slot to None, meaning the
             # user will be asked for the slot again
             return {"automate_task_name": None}
@@ -1695,6 +1900,23 @@ class AutomateTaskForm(FormAction):
         """
         return []
 
+class AskForAutomateTaskName(Action):
+    def name(self) -> Text:
+        return "action_ask_automate_task_name"
+
+    def run(
+        self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict
+    ) -> List[EventType]:
+        
+        dispatcher.utter_message(text="Which task do you want to automate?")
+        
+        model_path = tracker.get_slot("model")
+        df_tasks = u.extract_tasks(model_path)
+        for task in df_tasks['taskName']:
+            dispatcher.utter_message(text=task)
+        
+        return []
+
 class ActionAutomateTask(Action):
     def name(self) -> Text:
         return "action_automate_task"
@@ -1704,7 +1926,7 @@ class ActionAutomateTask(Action):
             domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
 
         bimp_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/bimp/qbp-simulator-engine_with_csv_statistics.jar'
-        model_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/inputs/PurchasingExample.bpmn'
+        model_path = tracker.get_slot("model")
 
         with open(model_path) as file:
             model= file.read()
@@ -1737,13 +1959,16 @@ class ActionAutomateTask(Action):
             elements_new = '\n'.join([resource_msg.format(x['id'], x['elementId'], x['type'], x['mean'], \
                         x['arg1'], x['arg2'], x['timeUnit'], x['resourceId']) for idx, x in df_tasks_new.iterrows()])
 
+            elements_new = """    <qbp:elements>
+            {}
+    </qbp:elements>""".format(elements_new)
             ptt_s = '<qbp:elements>'
             ptt_e = '</qbp:elements>'
             elements_old = u.extract_bpmn_resources(model_path, ptt_s, ptt_e)
 
             new_model = model.replace(elements_old, elements_new)
 
-            sce_name = '_automate_task_{}'.format(task)
+            sce_name = '_automate_task_{}'.format(task.replace(' ', '_'))
 
             new_model_path = model_path.split('.')[0] + sce_name + '.bpmn'
             new_model_path = new_model_path.replace('inputs','inputs/automate_task/models')
@@ -1794,7 +2019,7 @@ class AskMoreInformation(Action):
             domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
 
         bimp_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/bimp/qbp-simulator-engine_with_csv_statistics.jar'
-        model_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/inputs/PurchasingExample.bpmn'
+        model_path = tracker.get_slot("model")
 
         ask_more_info = tracker.get_slot("more_information")
         comparison_scenario = tracker.get_slot("comparison_scenario")
@@ -1803,7 +2028,7 @@ class AskMoreInformation(Action):
         if ask_more_info.lower() == 'yes':
             csv_output_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/outputs/automate_task/output_{}.csv'.format(name_scenario)
             u.execute_simulator_simple(bimp_path, comparison_scenario, csv_output_path)
-            output_message = u.return_message_stats_complete(csv_output_path, '{}'.format(' '.join(name_scenario.split('_'))))
+            output_message = u.return_message_stats_complete(csv_output_path, '{}'.format(' '.join(str(name_scenario).split('_'))))
 
             csv_org_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/outputs/automate_task/output_baseline.csv'
             u.execute_simulator_simple(bimp_path, model_path, csv_org_path)
@@ -1815,3 +2040,174 @@ class AskMoreInformation(Action):
         return [SlotSet("more_information", None),
                 SlotSet("comparison_scenario", None),
                 SlotSet("name_scenario", None)]
+
+class ValidateComparisonScenariosForm(FormValidationAction):
+
+    def name(self) -> Text:
+        return "validate_compare_scenarios_form"
+
+    @staticmethod
+    def scenarios_db() -> List[Text]:
+        """Database of supported scenarios."""
+
+        dict_scenarios = u.extract_scenarios()
+        return dict_scenarios
+
+    def validate_compared_scenarios(
+        self,
+        value: Text,
+        dispatcher: CollectingDispatcher,
+        tracker: Tracker,
+        domain: Dict[Text, Any],
+    ) -> Dict[Text, Any]:
+        """Validate compared_scenarios value."""
+
+        scenarios = self.scenarios_db()
+        scenarios_names = {x : scenarios[x].split('\\')[-1] for x in scenarios.keys()}
+        input_scenarios = [int(x.strip()) for x in value.split(',') if x.strip() != '' and x.strip() != ' ' and x.strip().isdigit()]
+        compared_scenarios = []
+
+        if len(input_scenarios)==0:
+            dispatcher.utter_message(response="utter_wrong_compared_scenarios")
+            for scenario in scenarios_names.keys():
+                dispatcher.utter_message(json.dumps({scenario: scenarios_names[scenario].split('\\')[-1].split('.')[0]}))
+            return {"compared_scenario_names": None}
+        else:
+            for input_scenario in input_scenarios:
+
+                if input_scenario in scenarios.keys():
+                    # validation succeeded, set the value of the "cuisine" slot to value
+                    compared_scenarios.append(scenarios[input_scenario])
+            if len(compared_scenarios)>0:
+                return {"compared_scenario_names": compared_scenarios}
+            else:
+                dispatcher.utter_message(response="utter_wrong_compared_scenarios")
+                for scenario in scenarios_names.keys():
+                    dispatcher.utter_message(json.dumps({scenario: scenarios_names[scenario].split('\\')[-1].split('.')[0]}))
+                return {"compared_scenario_names": None}
+
+class CompareScenariosForm(FormAction):
+
+    def name(self):
+        """Unique identifier of the form"""
+        return "compare_scenarios_form"
+
+    def required_slots(tracker: Tracker) -> List[Text]:
+        """A list of required slots that the form has to fill"""
+
+        return ["compared_scenarios"]
+
+    def submit(self):
+        """
+        Define what the form has to do
+        after all required slots are filled
+        """
+        return []
+
+class AskForComparedScenarios(Action):
+    def name(self) -> Text:
+        return "action_ask_compared_scenarios"
+
+    def run(
+        self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict
+    ) -> List[EventType]:
+        
+        dispatcher.utter_message(text="Which of the following scenarios do you want to compare? (write the number of scenarios separated by coma i.e. 1,2,4)")
+        
+        scenarios = u.extract_scenarios()
+        for scenario in scenarios.keys():
+            dispatcher.utter_message(json.dumps({scenario: scenarios[scenario].split('\\')[-1].split('.')[0]}))
+        
+        return []
+
+class CompareScenarios(Action):
+
+    def name(self) -> Text:
+        return "action_compare_scenarios"
+
+    def run(self, dispatcher: CollectingDispatcher,
+            tracker: Tracker,
+            domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+
+        bimp_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/bimp/qbp-simulator-engine_with_csv_statistics.jar'
+
+        compared_scenarios = tracker.get_slot("compared_scenario_names")
+
+        scenario_paths = []
+        for comparison_scenario in compared_scenarios:
+            name_sce = comparison_scenario.split('\\')[-1].split('.')[0].replace('_', ' ')
+            csv_output_path = 'outputs/comparison/' + comparison_scenario.replace('bpmn', 'csv').split('\\')[-1]
+            u.execute_simulator_simple(bimp_path, comparison_scenario, csv_output_path)
+            scenario_message = u.return_message_stats_complete(csv_output_path, name_sce)
+            dispatcher.utter_message(text=scenario_message)
+
+        return [SlotSet("compared_scenarios", None),
+                SlotSet("compared_scenario_names", None)]
+
+class AskForModel(Action):
+    def name(self) -> Text:
+        return "action_ask_model"
+
+    def run(
+        self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict
+    ) -> List[EventType]:
+        
+        dispatcher.utter_message(text="Which of those models do you want to choose to create the scenarios?")
+
+        models = {idx: x for idx, x in enumerate(glob('inputs/*.bpmn'), start=1)}
+        
+        for key in models.keys():
+            dispatcher.utter_message(text=json.dumps({key : models[int(key)]}))
+        
+        return []
+
+class ValidateChooseModelForm(FormValidationAction):
+
+    def name(self) -> Text:
+        return "validate_choose_model_form"
+
+    @staticmethod
+    def models_db() -> List[Text]:
+        """Database of supported models."""
+
+        models = {idx: x for idx, x in enumerate(glob('inputs/*.bpmn'), start=1)}
+        return models
+
+    def validate_model(
+        self,
+        value: Text,
+        dispatcher: CollectingDispatcher,
+        tracker: Tracker,
+        domain: Dict[Text, Any],
+    ) -> Dict[Text, Any]:
+        """Validate compared_scenarios value."""
+
+        models = self.models_db()
+        try:
+            if int(value) in models.keys():
+                return {"model": models[int(value)]}
+            else:
+                dispatcher.utter_message(text='Please enter a valid option for model')
+                for key in models.keys():
+                    dispatcher.utter_message(text=json.dumps({key : models[key]}))
+                return {"model": None}
+        except:
+            return {"model": value}
+
+class ChooseModelForm(FormAction):
+
+    def name(self):
+        """Unique identifier of the form"""
+        return "choose_model_form"
+
+    def required_slots(tracker: Tracker) -> List[Text]:
+        """A list of required slots that the form has to fill"""
+
+        return ["model"]
+
+    def submit(self):
+        """
+        Define what the form has to do
+        after all required slots are filled
+        """
+        return []

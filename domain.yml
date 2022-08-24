@@ -21,6 +21,8 @@ intents:
     use_entities: []
 - automate_task:
     use_entities: []
+- compare_scenarios:
+    use_entities: []
 - help
 
 entities:
@@ -28,18 +30,6 @@ entities:
 - dec_percentage
 
 slots:
-  inc_percentage:
-    type: text
-    influence_conversation: true
-    mappings:
-    - type: from_entity
-      entity: inc_percentage
-  dec_percentage:
-    type: text
-    influence_conversation: true
-    mappings:
-    - type: from_entity
-      entity: dec_percentage
 
   add_resource_name:
     type: text
@@ -90,22 +80,22 @@ slots:
       conditions:
         - active_loop: change_resources_form
           requested_slot: change_resources_role_modify
-  change_resource_new_amount:
+  change_resources_new_amount:
     type: text
     influence_conversation: false
     mappings:
     - type: from_text
       conditions:
         - active_loop: change_resources_form
-          requested_slot: change_resource_new_amount
-  change_resource_new_cost:
+          requested_slot: change_resources_new_amount
+  change_resources_new_cost:
     type: text
     influence_conversation: false
     mappings:
     - type: from_text
       conditions:
         - active_loop: change_resources_form
-          requested_slot: change_resource_new_cost
+          requested_slot: change_resources_new_cost
 
   fast_task_name:
     type: text
@@ -291,6 +281,30 @@ slots:
     mappings:
     - type: custom
 
+  compared_scenarios:
+    type: text
+    influence_conversation: false
+    mappings:
+    - type: from_text
+      conditions:
+        - active_loop: compare_scenarios_form
+          requested_slot: compared_scenarios
+  compared_scenario_names:
+    type: list
+    influence_conversation: false
+    mappings:
+    - type: custom
+
+  model:
+    type: text
+    influence_conversation: false
+    mappings:
+    - type: from_text
+      conditions:
+        - active_loop: choose_model_form
+          requested_slot: model
+  
+
 responses:
   utter_greeting:
   - text: Hello! I am What If Analysis chatbot! How can I help?
@@ -305,10 +319,6 @@ responses:
   - text: Indicate the total Amount of the resource that you want to add
   utter_ask_add_resource_cost:
   - text: Indicate the cost per hour of the resource that you want to add
-  utter_ask_add_resource_time_table:
-  - text: Which of those time tables do you want to assign to the new Role
-  utter_ask_add_resource_new_role:
-  - text: To which task do you want to assign the new resource?
   utter_wrong_add_resource_name:
   - text: Please enter a name that is not currently a role name.
   utter_wrong_add_resource_time_table:
@@ -320,21 +330,17 @@ responses:
   utter_wrong_add_resource_new_role:
   - text: Please enter a valid option for the assigning of new role.
 
-  utter_ask_change_resources_role_modify:
-  - text: Which resource do you want to modify?
   utter_wrong_change_resources_role_modify:
   - text: Please enter a valid role name.
-  utter_ask_change_resource_new_amount:
+  utter_ask_change_resources_new_amount:
   - text: Please define the total amount for this resource.
-  utter_wrong_change_resource_new_amount:
+  utter_wrong_change_resources_new_amount:
   - text: Please enter a valid option for the total amount for this resource.
-  utter_ask_change_resource_new_cost:
+  utter_ask_change_resources_new_cost:
   - text: Please define the cost per hour for this resource.
-  utter_wrong_change_resource_new_cost:
+  utter_wrong_change_resources_new_cost:
   - text: Please enter a valid option for the cost per hour for this resource.
 
-  utter_ask_fast_task_name:
-  - text: Which task do you want to be faster?
   utter_wrong_fast_task_name:
   - text: Please enter a valid task name.
   utter_ask_fast_task_percentage:
@@ -342,8 +348,6 @@ responses:
   utter_wrong_fast_task_percentage:
   - text: Please enter a valid value for percentage (0-100).
 
-  utter_ask_slow_task_name:
-  - text: Which task do you want to be slower?
   utter_wrong_slow_task_name:
   - text: Please enter a valid task name.
   utter_ask_slow_task_percentage:
@@ -351,12 +355,8 @@ responses:
   utter_wrong_slow_task_percentage:
   - text: Please enter a valid value for percentage (0-100).
 
-  utter_ask_remove_resources_role:
-  - text: Which resource do you want to remove?
   utter_wrong_remove_resources_role:
   - text: Please enter a valid resource name.
-  utter_ask_remove_resources_transfer_role:
-  - text: To which resource do you want to reallocate the resource removed tasks?
   utter_wrong_remove_resources_transfer_role:
   - text: Please enter a valid resource name.
   
@@ -384,13 +384,9 @@ responses:
   - text: Enter the final day of week for the rule.
   utter_wrong_create_working_time_to_weekday:
   - text: Please enter a valid weekday for the rule
-  utter_ask_create_working_time_resource:
-  - text: To which resource do you want to apply the new time table?
   utter_wrong_create_working_time_resource:
   - text: Please enter a valid resource name.
 
-  utter_ask_modify_working_time_name:
-  - text: Enter the Name for the time table that you want to modify.
   utter_wrong_modify_working_time_name:
   - text: Please enter a valid option for name.
   utter_ask_modify_working_time_from_time:
@@ -410,14 +406,15 @@ responses:
   utter_wrong_modify_working_time_to_weekday:
   - text: Please enter a valid weekday for the rule
 
-  utter_ask_automate_task_name:
-  - text: Which task do you want to automate?
   utter_wrong_automate_task_name:
   - text: Please enter a valid task name.
   utter_ask_automate_task_percentage:
   - text: What is the percentage of automation?
   utter_wrong_automate_task_percentage:
   - text: Please enter a valid option for percentage of automation.
+
+  utter_wrong_compared_scenarios:
+  - text: Please enter a valid id for comparison scenarios.
 
 actions:
 - action_increase_demand
@@ -439,6 +436,21 @@ actions:
 - validate_automate_task_form
 - action_automate_task
 - action_more_information
+- validate_compare_scenarios_form
+- action_compare_scenarios
+- action_ask_add_resource_time_table
+- action_ask_add_resource_new_role
+- action_ask_change_resources_role_modify
+- action_ask_fast_task_name
+- action_ask_slow_task_name
+- action_ask_remove_resources_role
+- action_ask_remove_resources_transfer_role
+- action_ask_create_working_time_resource
+- action_ask_modify_working_time_name
+- action_ask_automate_task_name
+- action_ask_compared_scenarios
+- action_ask_model
+- validate_choose_model_form
 - action_help
 
 forms:
@@ -452,8 +464,8 @@ forms:
   change_resources_form:
     required_slots:
       - change_resources_role_modify
-      - change_resource_new_amount
-      - change_resource_new_cost
+      - change_resources_new_amount
+      - change_resources_new_cost
   fast_task_form:
     required_slots:
       - fast_task_name
@@ -489,6 +501,12 @@ forms:
   more_information_form:
     required_slots:
       - more_information
+  compare_scenarios_form:
+    required_slots:
+      - compared_scenarios
+  choose_model_form:
+    required_slots:
+      - model
 
 session_config:
   session_expiration_time: 60

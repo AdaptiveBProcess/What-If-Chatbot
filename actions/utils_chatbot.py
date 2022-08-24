@@ -2,6 +2,7 @@ import subprocess
 import re
 import pandas as pd
 import os
+from glob import glob
 
 # =============================================================================
 #           CHANGE DEMAND SCENARIOS
@@ -137,7 +138,7 @@ def extract_bpmn_resources(model_path, ptt_s, ptt_e):
             break
     return '\n'.join(lines[start:end+1])
 
-def modify_bimp_model_resources(model_path, amount, new_amount, cost, new_cost):
+def modify_bimp_model_resources(model_path, amount, new_amount, cost, new_cost, mod_res):
     
     with open(model_path) as file:
         model_bimp = file.read()
@@ -150,7 +151,7 @@ def modify_bimp_model_resources(model_path, amount, new_amount, cost, new_cost):
     new_rep_res_cost = 'costPerHour="{}"'.format(new_amount)
     model_bimp = model_bimp.replace(rep_res_cost, new_rep_res_cost)
     
-    new_model_path = model_path.split('.')[0] + '_mod_resources' + '.bpmn'
+    new_model_path = model_path.split('.')[0] + '_mod_resource_{}'.format(mod_res) + '.bpmn'
     
     with open(new_model_path.replace('inputs','inputs/resources/models'), 'w+') as new_file:
         new_file.write(model_bimp)
@@ -336,3 +337,11 @@ def extract_task_add_info(model_path):
     df_tasks = df_tasks.merge(df_tasks_dist, on='elementId', how='left')
 
     return df_tasks, task_dist
+
+def extract_scenarios():
+    scenarios = glob('inputs/*/models/*.bpmn')
+
+    available_scenarios = [x for x in scenarios]
+    df_available_scenarios = pd.DataFrame(data = available_scenarios, columns = ['SCENARIOS'])
+
+    return dict(enumerate(list(df_available_scenarios['SCENARIOS']), start=1))

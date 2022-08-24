@@ -45,12 +45,12 @@ nlu:
     
 - intent: decrease_demand
   examples: |
-    - I want to create a scenario of [20](dec_percentage)% decreased demand
-    - I want to decrease [10](dec_percentage)% the process demand
-    - I want to see what happens if the process demand decrease in [50](dec_percentage)%
-    - I want to create a scenario of [90](dec_percentage)% decreased demand
-    - I want to decrease [60](dec_percentage)% the process demand
-    - I want to see what happens if the process demand decrease in [30](dec_percentage)%
+    - I want to create a scenario of [25](dec_percentage)% decreased demand
+    - I want to decrease [30](dec_percentage)% the process demand
+    - I want to see what happens if the process demand decrease in [75](dec_percentage)%
+    - I want to create a scenario of [100](dec_percentage)% decreased demand
+    - I want to decrease [15](dec_percentage)% the process demand
+    - I want to see what happens if the process demand decrease in [5](dec_percentage)%
 
 - intent: add_resources
   examples: |
@@ -101,3 +101,9 @@ nlu:
     - I want to automate a task in the process
     - Automate task in the process
     - I want to do an automatization in a process task
+
+- intent: compare_scenarios
+  examples: |
+    - I want to compare some scenarios created
+    - Compare some of the scenarios generated
+    - Compare scenarios
