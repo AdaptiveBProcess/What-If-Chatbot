@@ -67,3 +67,7 @@ Start a command line prompt and run:
 cd RasaUI
 npm start
 ```
+
+## Example use
+
+![ImagenConversacion](https://github.com/dfbaron/What-If-Chatbot/blob/main/images/Conversational%20Sample.png)
