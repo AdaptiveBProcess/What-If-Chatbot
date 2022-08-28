@@ -37,7 +37,7 @@ Once all the scenario parameters are specified, the modifications are made and, 
  - [Git](https://git-scm.com/downloads)
  - [npm](https://nodejs.org/dist/v16.17.0/node-v16.17.0-x64.msi)
 
-## Installation
+## Installation using conda
 
 ```python
 conda create -n what_if_chatbot python=3.8
