@@ -39,15 +39,24 @@ Once all the scenario parameters are specified, the modifications are made and, 
 
 ## Installation
 
+```python
+conda create -n what_if_chatbot python=3.8
+conda activate what_if_chatbot
+pip install -U --user pip 
+pip install rasa
+git clone https://github.com/dfbaron/What-If-Chatbot.git
+cd What-If-Chatbot
+```
+
 ## Use
 
 Start anaconda prompt with what_if_chatbot environment and run:
-```bash
+```python
 rasa run actions
 ```
 
 Start another anaconda prompt with what_if_chatbot environment and run:
-```bash
+```python
 rasa run --enable-api --cors "*"
 ```
 
