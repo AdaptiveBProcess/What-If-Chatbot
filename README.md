@@ -19,6 +19,8 @@ The conversational Chatbot allows specifying What-If scenarios based on the foll
 - Modification of working timetables.
 - Process task automation.
 
+![Imagen](https://github.com/dfbaron/What-If-Chatbot/blob/main/images/Simulation%20Results.png)
+
 ## Input
 
 The input for the What-If scenarios Chatbot is a BPMN model with the simulation parameters. From this model, the above-mentioned changes can be specified in the form of text inputs. Each scenario is associated with an intention in the chatbot, once a certain intention is predicted, some actions are executed, in which in some types of scenarios, additional information is requested to perform the modification of the BPMN model. 
