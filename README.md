@@ -29,9 +29,29 @@ The input for the What-If scenarios Chatbot is a BPMN model with the simulation 
 
 Once all the scenario parameters are specified, the modifications are made and, the respective simulation of the process model with the embedded scenario is performed using BIMP Simulator. Once the simulation is done, the chatbot returns the simulation results of the base scenario (model without changes) and the simulation results of the created scenario.
 
-# System Requirements
+## System Requirements
 
  - [Python 3.8](https://www.python.org/downloads/)
  - [Java SDK 1.8](https://www.oracle.com/fr/java/technologies/javase/javase8-archive-downloads.html)
  - [Anaconda Distribution](https://www.anaconda.com/products/individual)
  - [Git](https://git-scm.com/downloads)
+
+## Installation
+
+## Use
+
+Start anaconda prompt with what_if_chatbot environment and run:
+´´´
+rasa run actions
+´´´
+
+Start another anaconda prompt with what_if_chatbot environment and run:
+´´´
+rasa run --enable-api --cors "*"
+´´´
+
+Start a command line prompt and run:
+´´´
+cd RasaUI
+npm start
+´´´
