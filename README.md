@@ -47,6 +47,7 @@ pip install rasa==3.2.1
 git clone https://github.com/dfbaron/What-If-Chatbot.git
 cd What-If-Chatbot
 pip install -r requirements.txt
+npm install react-scripts
 ```
 
 ## Use
