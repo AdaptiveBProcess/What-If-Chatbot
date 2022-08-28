@@ -35,6 +35,7 @@ Once all the scenario parameters are specified, the modifications are made and, 
  - [Java SDK 1.8](https://www.oracle.com/fr/java/technologies/javase/javase8-archive-downloads.html)
  - [Anaconda Distribution](https://www.anaconda.com/products/individual)
  - [Git](https://git-scm.com/downloads)
+ - [npm](https://nodejs.org/dist/v16.17.0/node-v16.17.0-x64.msi)
 
 ## Installation
 
