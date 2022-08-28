@@ -43,9 +43,10 @@ Once all the scenario parameters are specified, the modifications are made and, 
 conda create -n what_if_chatbot python=3.8
 conda activate what_if_chatbot
 pip install -U --user pip 
-pip install rasa
+pip install rasa==3.2.1
 git clone https://github.com/dfbaron/What-If-Chatbot.git
 cd What-If-Chatbot
+pip install -r requirements.txt
 ```
 
 ## Use
