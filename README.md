@@ -41,17 +41,17 @@ Once all the scenario parameters are specified, the modifications are made and, 
 ## Use
 
 Start anaconda prompt with what_if_chatbot environment and run:
-´´´
+```bash
 rasa run actions
-´´´
+```
 
 Start another anaconda prompt with what_if_chatbot environment and run:
-´´´
+```bash
 rasa run --enable-api --cors "*"
-´´´
+```
 
 Start a command line prompt and run:
-´´´
+```bash
 cd RasaUI
 npm start
-´´´
+```
