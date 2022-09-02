@@ -1,6 +1,6 @@
 # Coral: Conversational What-If Process Analysis
 
-This repository presents a conversational Chatbot to generate What-If scenarios in a business-related environment. What-If scenarios Chatbot has the ability to read a BPMN model and make different changes in order to generate What-IF scenarios and help with business process optimization. This chatbot was built using the Python Framework for conversational chats called Rasa. In the same way, its interface was built using React JS.
+This repository presents a conversational Chatbot to generate What-If scenarios in a business-related environment called Coral. Coral has the ability to read a BPMN model and make different changes in order to generate What-IF scenarios and help with business process optimization. This chatbot was built using the Python Framework for conversational chats called Rasa. In the same way, its interface was taken from a project available in GitHub repository that was built using React JS.
 
 ## Description 
 
@@ -18,6 +18,7 @@ The conversational Chatbot allows specifying What-If scenarios based on the foll
 - Creation of working timetables.
 - Modification of working timetables.
 - Process task automation.
+- Compare generated models.
 
 ![Imagen](https://github.com/dfbaron/What-If-Chatbot/blob/main/images/Simulation%20Results.png)
 

@@ -1,3 +1,12 @@
+/***************************************************************************************
+*    Title: Rasa-Chatbot-with-React-JS-Interface
+*    Author: Shreyas Fegade
+*    Date: 2022
+*    Code version: 1.0
+*    Availability: https://github.com/smfcoder/Rasa-Chatbot-with-React-JS-Interface
+*
+***************************************************************************************/
+
 import './chatBot.css';
 import { useEffect, useState } from 'react';
 import {IoMdSend}  from 'react-icons/io';
