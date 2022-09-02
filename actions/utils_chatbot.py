@@ -83,21 +83,25 @@ def extract_text(model_path, ptt_s, ptt_e):
     return '\n'.join(lines[start+1:end])
 
 def return_message_stats(stats_path, scenario_name):
-    
+
     pd.set_option('display.float_format', lambda x: '%.2f' % x)
     
     ptt_s = 'Scenario statistics'
     ptt_e = 'Process Cycle Time (s) distribution' 
     text = extract_text(stats_path, ptt_s, ptt_e)
-    
+
     data = [x.split(',') for x in text.split('\n') if x != '']
     df = pd.DataFrame(data = data[1:], columns=data[0])
-    
-    df['Average'] = df['Average'].astype(float).astype(str).apply(lambda x: format(float(x),".2f"))
-    df = df[df['KPI']== 'Process Cycle Time (s)']
 
-    message = 'Average Stats for {} scenario: \n'.format(scenario_name)
-    message += '\n'.join(df['KPI'] + ': ' + df['Average'])
+    df = df[df['KPI']== 'Process Cycle Time (s)']
+    df['Average'] = df['Average'].astype(float).astype(str).apply(lambda x: format(float(x),".2f")).astype(float)
+    df['Average'], df['Units'] = zip(*df.apply(lambda x: standarize_metric(x['Average'], x['KPI']), axis=1))
+    df['Average'] = df['Average'].round(2)
+    df['KPI'] = df.apply(lambda x: x['KPI'].replace(' (s)', ''), axis=1)
+
+
+    message = '{}: \n'.format(scenario_name)
+    message += '\n'.join(df['KPI'] + ': ' + df['Average'].astype(str) + ' ' + df['Units'])
     
     return message
 
@@ -108,17 +112,34 @@ def return_message_stats_complete(stats_path, scenario_name):
     ptt_s = 'Scenario statistics'
     ptt_e = 'Process Cycle Time (s) distribution' 
     text = extract_text(stats_path, ptt_s, ptt_e)
-    
+
     data = [x.split(',') for x in text.split('\n') if x != '']
     df = pd.DataFrame(data = data[1:], columns=data[0])
-    
-    df['Average'] = df['Average'].astype(float).astype(str).apply(lambda x: format(float(x),".2f"))
 
-    message = 'Average Stats for {} scenario: \n'.format(scenario_name)
-    message += '\n'.join(df['KPI'] + ': ' + df['Average'])
+    df['Average'] = df['Average'].astype(float).astype(str).apply(lambda x: format(float(x),".2f")).astype(float)
+    df['Average'], df['Units'] = zip(*df.apply(lambda x: standarize_metric(x['Average'], x['KPI']), axis=1))
+    df['Average'] = df['Average'].round(2)
+    df['KPI'] = df.apply(lambda x: x['KPI'].replace(' (s)', ''), axis=1)
+
+    message = '{} \n'.format(scenario_name)
+    message += '\n'.join(df['KPI'] + ': ' + df['Average'].astype(str) + ' ' + df['Units'])
     
     return message
 
+def standarize_metric(value, kpi):
+    if 'cost' not in kpi.lower():
+        if (value <= 60*1.5):
+            return value, 'seconds'
+        elif (value > 60*1.5) and (value <= 60*60*1.5):
+            return value/(60), 'minutes'
+        elif (value > 60*60*1.5) and (value <= 60*60*24*1.5):
+            return value/(60*60), 'hours'
+        elif (value > 60*60*24*1.5) and (value <= 60*60*24*7*1.5):
+            return value/(60*60*24), 'days'
+        elif (value > 60*60*24*7*1.5):
+            return value/(60*60*24*7), 'weeks'
+    else:
+        return value, ''
 
 # =============================================================================
 #               CHANGE RESOURCES SCENARIO

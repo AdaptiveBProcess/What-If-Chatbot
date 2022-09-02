@@ -1,5 +1,5 @@
 import './chatBot.css';
-import react, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {IoMdSend}  from 'react-icons/io';
 import {BiBot,BiUser} from 'react-icons/bi';
 
@@ -58,7 +58,7 @@ function Basic(){
         .then(response => response.json())
         .then((response) => {
             if(response){
-                if (response.length==1) {
+                if (response.length===1) {
                     const temp = response[0];
                     const recipient_id = temp["recipient_id"];
                     const recipient_msg = temp["text"];        
@@ -88,7 +88,7 @@ function Basic(){
     console.log(chat);
 
     const stylecard = {
-        maxWidth : '35rem',
+        maxWidth : '40rem',
         border: '1px solid black',
         paddingLeft: '0px',
         paddingRight: '0px',
@@ -97,7 +97,7 @@ function Basic(){
 
     }
     const styleHeader = {
-        height: '4.5rem',
+        height: '6rem',
         borderBottom : '1px solid black',
         borderRadius: '30px 30px 0px 0px',
         backgroundColor: '#8012c4',
@@ -113,7 +113,7 @@ function Basic(){
     }
     const styleBody = {
         paddingTop : '10px',
-        height: '28rem',
+        height: '35rem',
         overflowY: 'a',
         overflowX: 'hidden',
         
@@ -129,7 +129,7 @@ function Basic(){
             
                 <div className="card" style={stylecard}>
                     <div className="cardHeader text-white" style={styleHeader}>
-                        <h1 style={{marginBottom:'0px'}}>AI Assistant</h1>
+                        <h1 style={{marginBottom:'0px'}}>CORAL: Conversational What-If Process Analysis</h1>
                         {botTyping ? <h6>Bot Typing....</h6> : null}
                         
                         

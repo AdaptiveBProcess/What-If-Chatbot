@@ -201,17 +201,17 @@ class ActionHelp(Action):
             tracker: Tracker,
             domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
         
-        msg = """   The scenarios supported by What-If scenarios Chatbot are:
-    - Scenarios of increase in process demand.
-    - Scenarios of decrease in process demand.
-    - Scenarios of addition of resources to the process.
-    - Scenarios of modification of existing resources in the process.
-    - Scenarios of removal of existing resources in the process.
-    - Scenarios of optimization of process tasks.
-    - Scenarios of creation of working timetables.
-    - Scenarios of modification of working timetables.
-    - Scenarios of process task automation.
-    - Scenarios of comparison between generated models."""
+        msg = """   Coral support these what-if scenarios:
+    - Increase of demand
+    - Decrease of demand
+    - Adding resources
+    - Modifying resources
+    - Removing resources
+    - Optimizing tasks
+    - Creating new timetables
+    - Modifying timetables
+    - Automating tasks
+    - Compare generated models"""
 
         msgs = msg.split('\n')
         for msg_h in msgs:
@@ -225,7 +225,7 @@ class AskForAddResourceTimeTable(Action):
         self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict
     ) -> List[EventType]:
         
-        dispatcher.utter_message(text="Which of those time tables do you want to assign to the new Role?")
+        dispatcher.utter_message(text="Which of these timetables?")
         
         model_path = tracker.get_slot("model")
         df_timetables = u.extract_timetables(model_path)
@@ -341,11 +341,11 @@ class ActionAddResource(Action):
         sce_name = resourceName.replace(' ', '_')
         csv_output_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/outputs/resources/output_add_resource_{}.csv'.format(sce_name)
         u.execute_simulator_simple(bimp_path, new_model_path, csv_output_path)
-        output_message = u.return_message_stats(csv_output_path, 'Addition of resource {}'.format(sce_name))
+        output_message = u.return_message_stats(csv_output_path, 'Stats for the what-if scenario: Resource Addition')
         
         csv_org_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/outputs/resources/output_baseline.csv'
         u.execute_simulator_simple(bimp_path, model_path, csv_org_path)
-        org_message = u.return_message_stats(csv_org_path, 'Base')
+        org_message = u.return_message_stats(csv_org_path, 'Stats for the Baseline Scenario')
             
         dispatcher.utter_message(text=org_message)
         dispatcher.utter_message(text=output_message)
@@ -383,11 +383,11 @@ class ActionIncreaseDemand(Action):
        
         u.execute_simulator_simple(bimp_path, new_model_path, csv_output_path)
 
-        output_message = u.return_message_stats(csv_output_path, 'Increased demand in {} percent'.format(sce_name))
+        output_message = u.return_message_stats(csv_output_path, 'Stats for the what-if scenario: Increase Demand')
 
         csv_org_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/outputs/demand/output_baseline.csv'
         u.execute_simulator_simple(bimp_path, model_path, csv_org_path)
-        org_message = u.return_message_stats(csv_org_path, 'Base')
+        org_message = u.return_message_stats(csv_org_path, 'Stats for the Baseline Scenario')
 
         dispatcher.utter_message(text=org_message)
         dispatcher.utter_message(output_message)
@@ -422,11 +422,11 @@ class ActionDecreaseDemand(Action):
         
         u.execute_simulator_simple(bimp_path, new_model_path, csv_output_path)
 
-        output_message = u.return_message_stats(csv_output_path, sce_name)
+        output_message = u.return_message_stats(csv_output_path, 'Stats for the what-if scenario: Decrease demand')
 
         csv_org_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/outputs/demand/output_baseline.csv'
         u.execute_simulator_simple(bimp_path, model_path, csv_org_path)
-        org_message = u.return_message_stats(csv_org_path, 'Base')
+        org_message = u.return_message_stats(csv_org_path, 'Stats for the Baseline scenario')
 
         dispatcher.utter_message(text=org_message)
         dispatcher.utter_message(output_message)
@@ -599,11 +599,11 @@ class ActionChangeResource(Action):
         
         csv_output_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/outputs/resources/output_mod_resource_{}.csv'.format(mod_name)
         u.execute_simulator_simple(bimp_path, new_model_path, csv_output_path)
-        output_message = u.return_message_stats(csv_output_path, 'Modification of resource {}'.format(mod_name))
+        output_message = u.return_message_stats(csv_output_path, 'Stats for the what-if scenario: Resource Modification')
         
         csv_org_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/outputs/resources/output_baseline.csv'
         u.execute_simulator_simple(bimp_path, model_path, csv_org_path)
-        org_message = u.return_message_stats(csv_org_path, 'Base')
+        org_message = u.return_message_stats(csv_org_path, 'Stats for the baseline scenario')
 
         dispatcher.utter_message(text=org_message)
         dispatcher.utter_message(text=output_message)
@@ -684,7 +684,7 @@ class AskForFastTaskName(Action):
         self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict
     ) -> List[EventType]:
         
-        dispatcher.utter_message(text="Which task do you want to be faster?")
+        dispatcher.utter_message(text="Which task do you want to become faster?")
         
         model_path = tracker.get_slot("model")
         df_tasks = u.extract_tasks(model_path)
@@ -766,11 +766,11 @@ class ActionFastTask(Action):
             
         csv_output_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/outputs/fast_slow_task/output_{}.csv'.format(sce_name)
         u.execute_simulator_simple(bimp_path, new_model_path, csv_output_path)
-        output_message = u.return_message_stats(csv_output_path, '{}'.format(' '.join(sce_name.split('_'))))
+        output_message = u.return_message_stats(csv_output_path, 'Stats for the what-if scenario: Faster Task')
         
         csv_org_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/outputs/fast_slow_task/output_baseline.csv'
         u.execute_simulator_simple(bimp_path, model_path, csv_org_path)
-        org_message = u.return_message_stats(csv_org_path, 'Base')
+        org_message = u.return_message_stats(csv_org_path, 'Stats for the baseline scenario')
 
         dispatcher.utter_message(text=org_message)
         dispatcher.utter_message(text=output_message)
@@ -850,7 +850,7 @@ class AskForSlowTaskName(Action):
         self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict
     ) -> List[EventType]:
         
-        dispatcher.utter_message(text="Which task do you want to be slower?")
+        dispatcher.utter_message(text="Which task do you want to become slower?")
         
         model_path = tracker.get_slot("model")
         df_tasks = u.extract_tasks(model_path)
@@ -931,11 +931,11 @@ class ActionSlowTask(Action):
             
         csv_output_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/outputs/fast_slow_task/output_{}.csv'.format(sce_name)
         u.execute_simulator_simple(bimp_path, new_model_path, csv_output_path)
-        output_message = u.return_message_stats(csv_output_path, '{}'.format(' '.join(sce_name.split('_'))))
+        output_message = u.return_message_stats(csv_output_path, 'Stats for the what-if scenario: Slower Task')
         
         csv_org_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/outputs/fast_slow_task/output_baseline.csv'
         u.execute_simulator_simple(bimp_path, model_path, csv_org_path)
-        org_message = u.return_message_stats(csv_org_path, 'Base')
+        org_message = u.return_message_stats(csv_org_path, 'Stats for the baseline scenario')
 
         dispatcher.utter_message(text=org_message)
         dispatcher.utter_message(text=output_message)
@@ -1047,7 +1047,7 @@ class AskForRemoveResourceTransferRole(Action):
         self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict
     ) -> List[EventType]:
         
-        dispatcher.utter_message(text="To which resource do you want to reallocate the resource removed tasks?")
+        dispatcher.utter_message(text="To which resource do you want to reallocate the removed resource tasks?")
         
         model_path = tracker.get_slot("model")
         df_resources = u.extract_resources(model_path)
@@ -1127,11 +1127,11 @@ class ActionRemoveResources(Action):
         sce_name = 'Remotion of resource {}'.format(res_remove)
         csv_output_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/outputs/resources/output_rem_resource_{}.csv'.format(res_remove.replace(' ', '_'))
         u.execute_simulator_simple(bimp_path, new_model_path, csv_output_path)
-        output_message = u.return_message_stats(csv_output_path, sce_name)
+        output_message = u.return_message_stats(csv_output_path, 'Stats for the what-if scenario: Remove resource')
         
         csv_org_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/outputs/resources/output_baseline.csv'
         u.execute_simulator_simple(bimp_path, model_path, csv_org_path)
-        org_message = u.return_message_stats(csv_org_path, 'Base')
+        org_message = u.return_message_stats(csv_org_path, 'Stats for the baseline scenario')
 
         dispatcher.utter_message(text=org_message)
         dispatcher.utter_message(text=output_message)
@@ -1336,7 +1336,7 @@ class AskForCreateWorkingTimeResource(Action):
         self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict
     ) -> List[EventType]:
         
-        dispatcher.utter_message(text="To which resource do you want to apply the new time table?")
+        dispatcher.utter_message(text="To which resource do you want to apply the new timetable?")
         
         model_path = tracker.get_slot("model")
         df_resources = u.extract_resources(model_path)
@@ -1487,11 +1487,11 @@ class ActionCreateWorkingTime(Action):
             
         csv_output_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/outputs/working_tables/output{}.csv'.format(sce_name)
         u.execute_simulator_simple(bimp_path, new_model_path, csv_output_path)
-        output_message = u.return_message_stats(csv_output_path, '{}'.format(' '.join(sce_name.split('_'))))
+        output_message = u.return_message_stats(csv_output_path, 'Stats for the what-if scenario: Timetable Creation')
         
         csv_org_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/outputs/working_tables/output_baseline.csv'
         u.execute_simulator_simple(bimp_path, model_path, csv_org_path)
-        org_message = u.return_message_stats(csv_org_path, 'Base')
+        org_message = u.return_message_stats(csv_org_path, 'Stats for the baseline scenario')
 
         dispatcher.utter_message(text=org_message)
         dispatcher.utter_message(text=output_message)
@@ -1679,7 +1679,7 @@ class AskForModifyWorkingTimeName(Action):
         self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict
     ) -> List[EventType]:
 
-        dispatcher.utter_message(text="Enter the Name for the time table that you want to modify.")
+        dispatcher.utter_message(text="Which timetable do you want to modify?")
 
         model_path = tracker.get_slot("model")
         df_timetables = u.extract_timetables(model_path)
@@ -1801,11 +1801,11 @@ class ActionModifyWorkingTime(Action):
             
         csv_output_path = 'C:/CursosMaestria/Tesis/Chatbot/outputs/working_tables/output{}.csv'.format(sce_name)
         u.execute_simulator_simple(bimp_path, new_model_path, csv_output_path)
-        output_message = u.return_message_stats(csv_output_path, '{}'.format(' '.join(sce_name.split('_'))))
+        output_message = u.return_message_stats(csv_output_path, 'Stats for the what-if scenario: Timetable Modification')
         
         csv_org_path = 'C:/CursosMaestria/Tesis/Chatbot/outputs/working_tables/output_baseline.csv'
         u.execute_simulator_simple(bimp_path, model_path, csv_org_path)
-        org_message = u.return_message_stats(csv_org_path, 'Base')
+        org_message = u.return_message_stats(csv_org_path, 'Stats for the baseline scenario')
 
         dispatcher.utter_message(text=org_message)
         dispatcher.utter_message(text=output_message)
@@ -1977,11 +1977,11 @@ class ActionAutomateTask(Action):
                 
             csv_output_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/outputs/automate_task/output_{}.csv'.format(sce_name)
             u.execute_simulator_simple(bimp_path, new_model_path, csv_output_path)
-            output_message = u.return_message_stats(csv_output_path, '{}'.format(' '.join(sce_name.split('_'))))
+            output_message = u.return_message_stats(csv_output_path, 'Stats for the what-if scenario: Task Automation')
 
             csv_org_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/outputs/automate_task/output_baseline.csv'
             u.execute_simulator_simple(bimp_path, model_path, csv_org_path)
-            org_message = u.return_message_stats(csv_org_path, 'Base')
+            org_message = u.return_message_stats(csv_org_path, 'Stats for the baseline scenario')
 
             dispatcher.utter_message(text=org_message)
             dispatcher.utter_message(text=output_message)
@@ -2032,7 +2032,7 @@ class AskMoreInformation(Action):
 
             csv_org_path = 'C:/CursosMaestria/Tesis/What-If-Chatbot/outputs/automate_task/output_baseline.csv'
             u.execute_simulator_simple(bimp_path, model_path, csv_org_path)
-            org_message = u.return_message_stats_complete(csv_org_path, 'Base')
+            org_message = u.return_message_stats_complete(csv_org_path, 'Stats for the baseline scenario')
 
             dispatcher.utter_message(text=org_message)
             dispatcher.utter_message(text=output_message)
@@ -2152,7 +2152,7 @@ class AskForModel(Action):
         self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict
     ) -> List[EventType]:
         
-        dispatcher.utter_message(text="Which of those models do you want to choose to create the scenarios?")
+        dispatcher.utter_message(text="On which of these models?")
 
         models = {idx: x for idx, x in enumerate(glob('inputs/*.bpmn'), start=1)}
         

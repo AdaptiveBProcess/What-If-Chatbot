@@ -307,24 +307,24 @@ slots:
 
 responses:
   utter_greeting:
-  - text: Hello! I am What If Analysis chatbot! How can I help?
+  - text: Hello! I am Coral, Conversational What If Process Analysis chatbot. Which what-if scenario do you want to create?
   utter_goodbye:
-  - text: See you later, thanks for use this chatbot.
+  - text: See you later, thanks for use Coral.
   utter_ask_more_information:
-  - text: Do you want to know more information?
+  - text: Do you want to know additional performance metrics?
   
   utter_ask_add_resource_name:
-  - text: Indicate the name of the resource that you want to add
+  - text: Indicate the name of the resource
   utter_ask_add_resource_amount:
-  - text: Indicate the total Amount of the resource that you want to add
+  - text: Indicate the number of resources
   utter_ask_add_resource_cost:
-  - text: Indicate the cost per hour of the resource that you want to add
+  - text: Indicate the cost per hour of the resource
   utter_wrong_add_resource_name:
   - text: Please enter a name that is not currently a role name.
   utter_wrong_add_resource_time_table:
-  - text: Please enter a valid option for time table for the new role.
+  - text: Please enter a valid option for timetable for the new role.
   utter_wrong_add_resource_amount:
-  - text: Please enter a valid option for resource amount.
+  - text: Please enter a valid option for number of resources.
   utter_wrong_add_resource_cost:
   - text: Please enter a valid option for resource cost per hour.
   utter_wrong_add_resource_new_role:
@@ -333,13 +333,13 @@ responses:
   utter_wrong_change_resources_role_modify:
   - text: Please enter a valid role name.
   utter_ask_change_resources_new_amount:
-  - text: Please define the total amount for this resource.
+  - text: Please define the number of resources.
   utter_wrong_change_resources_new_amount:
-  - text: Please enter a valid option for the total amount for this resource.
+  - text: Please enter a valid option for number of resources.
   utter_ask_change_resources_new_cost:
-  - text: Please define the cost per hour for this resource.
+  - text: Please define the cost per hour
   utter_wrong_change_resources_new_cost:
-  - text: Please enter a valid option for the cost per hour for this resource.
+  - text: Please enter a valid option for the cost per hour
 
   utter_wrong_fast_task_name:
   - text: Please enter a valid task name.
@@ -361,11 +361,11 @@ responses:
   - text: Please enter a valid resource name.
   
   utter_ask_create_working_time_id:
-  - text: Enter the Id for the new time table.
+  - text: Enter the Id for the new timetable.
   utter_wrong_create_working_time_id:
   - text: Please enter a valid option for Id.
   utter_ask_create_working_time_name:
-  - text: Enter the Name for the new time table.
+  - text: Enter the Name for the new timetable.
   utter_wrong_create_working_time_name:
   - text: Please enter a valid option for name.
   utter_ask_create_working_time_from_time:
