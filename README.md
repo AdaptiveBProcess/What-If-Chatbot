@@ -1,4 +1,4 @@
-# What If Chatbot
+# Coral: Conversational What-If Process Analysis
 
 This repository presents a conversational Chatbot to generate What-If scenarios in a business-related environment. What-If scenarios Chatbot has the ability to read a BPMN model and make different changes in order to generate What-IF scenarios and help with business process optimization. This chatbot was built using the Python Framework for conversational chats called Rasa. In the same way, its interface was built using React JS.
 
@@ -37,15 +37,17 @@ Once all the scenario parameters are specified, the modifications are made and, 
  - [Git](https://git-scm.com/downloads)
  - [npm](https://nodejs.org/dist/v16.17.0/node-v16.17.0-x64.msi)
 
-## Installation
+## Installation using conda
 
 ```python
 conda create -n what_if_chatbot python=3.8
 conda activate what_if_chatbot
 pip install -U --user pip 
-pip install rasa
+pip install rasa==3.2.1
 git clone https://github.com/dfbaron/What-If-Chatbot.git
 cd What-If-Chatbot
+pip install -r requirements.txt
+npm install react-scripts
 ```
 
 ## Use
@@ -65,3 +67,7 @@ Start a command line prompt and run:
 cd RasaUI
 npm start
 ```
+
+## Example use
+
+![ImagenConversacion](https://github.com/dfbaron/What-If-Chatbot/blob/main/images/Conversational%20Sample.png)
